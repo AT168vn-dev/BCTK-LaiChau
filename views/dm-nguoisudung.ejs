@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin người sử dụng</title>
+    <style>
+        /* Làm mờ các trường input */
+        input[disabled] {
+            opacity: 1;
+        }
+
+        input:focus,
+        select:focus {
+            opacity: 1;
+            /* Giữ nguyên định dạng khi focus */
+        }
+
+        form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: initial;
+            /* Giữ nguyên màu nhãn khi form được click */
+        }
+
+        input {
+            display: block;
+            margin-bottom: 10px;
+            padding: 8px;
+            opacity: 0.5;
+        }
+
+        select {
+            display: block;
+            margin-bottom: 20px;
+            padding: 8px;
+            opacity: 0.5;
+            width: 99.5%;
+        }
+
+        /* Container chính dùng để chia layout */
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        /* Định dạng riêng cho panel chứa nội dung bảng */
+        .table-panel {
+            width: 100%;
+            max-height: 606px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 0;
+        }
+
+        /* Định dạng table-container để chỉ chứa tiêu đề bảng */
+        .table-container {
+            width: 60%;
+            /* Thu nhỏ phần table-panel */
+        }
+
+        /* Định dạng form nằm bên phải */
+        .form-container {
+            width: 40%;
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Ẩn cột mật khẩu */
+        .hidden-col {
+            display: none;
+        }
+
+        /*Hiển thị icon cấm */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            width: 450px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .confirmDeleteModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .combobox-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            /* Giãn khoảng cách giữa các combobox */
+            margin-top: 20px;
+        }
+
+        .combobox-container>div {
+            flex: 1;
+            /* Giãn các phần tử trong combobox-container để đều nhau */
+        }
+
+        .combobox-container select,
+        .combobox-container input {
+            padding: 8px;
+            font-size: 14px;
+            width: 98%;
+        }
+
+        .combobox-container button {
+            padding: 10px 20px;
+            /* Tăng khoảng cách padding cho button */
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            height: 42px;
+            /* Chiều cao tương tự với các input và select */
+        }
+
+        .combobox-container button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Cấu trúc bảng */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #D3D3D3;
+
+            /* Đảm bảo cột có kích thước cố định */
+        }
+
+        table th,
+        table td {
+            border: 1px solid #D3D3D3;
+            padding: 12px;
+            text-align: left;
+            overflow: hidden;
+            /* Ẩn nội dung tràn */
+            white-space: nowrap;
+            /* Không cho phép xuống dòng */
+            text-overflow: ellipsis;
+            /* Thêm dấu ... nếu nội dung vượt quá */
+        }
+
+        /* Cố định chiều rộng cho từng cột */
+        table th:nth-child(1),
+        table td:nth-child(1) {
+            width: 80px;
+            /* Mã NSD */
+        }
+
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            width: 250px;
+            /* Tên */
+        }
+
+        table th:nth-child(3),
+        table td:nth-child(3) {
+            width: 100px;
+            /* Khoa */
+        }
+
+        table th:nth-child(4),
+        table td:nth-child(4) {
+            width: 150px;
+            /* CCHN */
+        }
+
+        table th:nth-child(5),
+        table td:nth-child(5) {
+            width: 150px;
+            /* Điện thoại */
+        }
+
+        table th:nth-child(6),
+        table td:nth-child(6) {
+            display: none;
+            /* Ẩn cột mật khẩu */
+        }
+
+        /* Căn giữa tiêu đề */
+        table th {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+        }
+
+        /* Cố định tiêu đề table */
+        table thead th {
+            position: sticky;
+            top: 0;
+            background-color: #007bff;
+            z-index: 2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #e6f7ff;
+            cursor: pointer;
+        }
+
+        .styleThongBao {
+            text-align: center;
+        }
+
+        /* Định dạng chung cho tất cả các nút */
+        /* Định dạng chung cho các nút */
+        button.general-button {
+            width: 82px;
+            padding: 10px 20px;
+            background-color: #1900ff !important;
+            /* Đảm bảo màu nền được áp dụng */
+            color: white !important;
+            /* Đảm bảo màu chữ được áp dụng */
+            border: none;
+            cursor: pointer;
+            margin: 3px 2px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        /* Hiệu ứng hover */
+        button.general-button:hover:not(:disabled) {
+            background-color: #0056b3 !important;
+            /* Đảm bảo hover hoạt động */
+        }
+
+        /* Nút khi bị disabled */
+        button.general-button:disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Bảng thông tin người dùng bên trái -->
+        <div class="table-container">
+            <div class="search-container">
+                <label>Tìm kiếm theo Mã NSD/ Tên NSD:</label>
+                <input type="text" id="tim-kiem-nsd" placeholder="Nhập tìm kiếm" onkeypress="timKiemNguoiSuDung(event)">
+            </div>
+            <!-- Panel chứa bảng thông tin -->
+            <div class="table-panel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 3%;" ondblclick="sortTable(0)">Mã NSD</th>
+                            <th style="width: 45%;" ondblclick="sortTable(1)">Tên</th>
+                            <th style="width: 12%;" ondblclick="sortTable(2)">Khoa</th>
+                            <th style="width: 25%;" ondblclick="sortTable(3)">CCHN</th>
+                            <th style="width: 15%;" ondblclick="sortTable(4)">Điện thoại</th>
+                            <th class="hidden-col" style="width: 0%;">Mật khẩu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <% data.forEach(function(row) { %>
+                            <tr
+                                onclick="loadUserInfo('<%= row.ma_nsd %>', '<%= row.ho_ten %>', '<%= row.ma_khoa %>', '<%= row.chungchi_hanhnghe %>', '<%= row.sodt %>', '<%= row.mat_khau %>'); zSuKienClickTable()">
+                                <td style="width: 3%;">
+                                    <%= row.ma_nsd || '' %>
+                                </td>
+                                <td style="width: 45%;">
+                                    <%= row.ho_ten || '' %>
+                                </td>
+                                <td style="width: 12%;">
+                                    <%= row.ma_khoa || '' %>
+                                </td>
+                                <td style="width: 25%;">
+                                    <%= row.chungchi_hanhnghe || '' %>
+                                </td>
+                                <td style="width: 15%;">
+                                    <%= row.sodt || '' %>
+                                </td>
+                                <td class="hidden-col" style="width: 0%;">
+                                    <%= row.mat_khau || '' %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Form nhập liệu bên phải -->
+        <div class="form-container">
+            <h2>Thông Tin Chi Tiết:</h2>
+            <form>
+                <label for="zMaNSD">Mã NSD</label>
+                <input type="text" id="zMaNSD" name="zMaNSD" style="width: 96%;" disabled>
+
+                <label for="zTenNSD">Tên NSD</label>
+                <input type="text" id="zTenNSD" name="zTenNSD" style="width: 96%;" disabled>
+
+                <label for="zMatKhau">Mật Khẩu</label>
+                <input type="password" id="zMatKhau" name="zMatKhau" style="width: 96%;" disabled>
+
+                <label for="zCCHN">CCHN</label>
+                <input type="text" id="zCCHN" name="zCCHN" style="width: 96%;" disabled>
+
+                <label for="zMaKhoa">Khoa</label>
+                <div class="combobox-container">
+                    <input type="text" id="zMaKhoa" list="load-khoa" onchange="loadThongTinComboboxKhoa()" disabled>
+                </div>
+
+                <label for="zSoDT">Số Điện Thoại</label>
+                <input type="text" id="zSoDT" name="zSoDT" style="width: 96%;" disabled>
+
+                <button id="zButton_Them" class="general-button" type ="button" onclick="zSuKienButtonThem()"> Thêm</button>
+
+                <button class="general-button" type ="button" id="zButton_Sua" style="background-color: gray; opacity: 0.6;" disabled
+                    onclick="zSuKienButtonSua()">Sửa</button>
+                <button class="general-button" type ="button" id="zButton_Xoa" style="background-color: gray; opacity: 0.6;" disabled
+                    onclick="zSuKienButtonXoa()">Xóa</button>
+                <button class="general-button" type ="button" id="zButton_Luu" style="background-color: gray; opacity: 0.6;" disabled
+                    onclick="zSuKienButtonLuu()">Lưu</button>
+                <button class="general-button" type ="button" id="zButton_Huy" style="background-color: gray; opacity: 0.6;" disabled
+                    onclick="zSuKienButtonHuy()">Hủy</button>
+            </form>
+            <div class="styleThongBao">
+                <b><span type="text" id="showThongBao" style="width: 96%; color: red; "></span></b>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal xác nhận trước khi xóa -->
+    <div id="confirmDeleteModal" class="confirmDeleteModal">
+        <div class="dialog">
+            <p>Bạn có muốn xóa mã người sử dụng đã chọn không?</p>
+            <button id="confirmDeleteYes">YES</button>
+            <button id="confirmDeleteNo">NO</button>
+        </div>
+    </div>
+
+    <script src="/js/dm-nguoisudung.js"></script>
+    <script src="/js/scripts.js"></script>
+
+</body>
+
+</html>

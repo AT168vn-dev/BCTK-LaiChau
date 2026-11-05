@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác nhận đăng nhập</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .status-icon {
+            font-size: 60px;
+            margin: 20px 0;
+        }
+        
+        .status-icon.pending {
+            color: #ffa500;
+        }
+        
+        .status-icon.confirmed {
+            color: #28a745;
+        }
+        
+        .status-icon.expired {
+            color: #dc3545;
+        }
+        
+        .message {
+            color: #666;
+            margin: 20px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .success {
+            color: #28a745;
+        }
+        
+        .token-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px dashed #667eea;
+        }
+        
+        .token-display strong {
+            display: block;
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .token-display small {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .login-form, .register-form {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .login-form.active, .register-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-link {
+            background: none;
+            color: #667eea;
+            text-decoration: underline;
+            padding: 10px;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #statusMessage {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        #statusMessage.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        #statusMessage.success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <% if (status === 'pending') { %>
+            <h1>Xác nhận đăng nhập</h1>
+            <div class="status-icon pending">📱</div>
+            
+            <!-- Tab buttons -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="loginTab" onclick="showLogin()">Đăng nhập</button>
+                <button class="tab-btn" id="registerTab" onclick="showRegister()">Đăng ký</button>
+            </div>
+            
+            <!-- Form đăng nhập -->
+            <div class="login-form active" id="loginForm">
+                <p class="message">Vui lòng chọn phương thức đăng nhập:</p>
+                
+                <!-- Đăng nhập bằng username + password -->
+                <form id="loginFormUsername">
+                    <div class="form-group">
+                        <label for="loginUsername">Tên đăng nhập:</label>
+                        <input type="text" id="loginUsername" name="username" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Mật khẩu:</label>
+                        <input type="password" id="loginPassword" name="password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtnUsername">
+                        Đăng nhập
+                    </button>
+                </form>
+                
+                <div style="margin: 20px 0; text-align: center; color: #666;">HOẶC</div>
+                
+                <!-- Đăng nhập bằng số điện thoại (không cần token vì mỗi QR code có token khác) -->
+                <form id="loginFormPhone">
+                    <div class="form-group">
+                        <label for="loginPhone">Số điện thoại:</label>
+                        <input type="tel" id="loginPhone" name="phoneNumber" required placeholder="0123456789">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtnPhone">
+                        Đăng nhập
+                    </button>
+                </form>            
+            </div>
+            
+            <!-- Form đăng ký -->
+            <div class="register-form" id="registerForm">
+                <p class="message">Đăng ký tài khoản mới:</p>
+                <form id="registerFormData">
+                    <div class="form-group">
+                        <label for="registerDisplayName">Họ và tên:</label>
+                        <input type="text" id="registerDisplayName" name="displayName" required placeholder="Tên hiển thị của bạn">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerUsername">Tài khoản:</label>
+                        <input type="text" id="registerUsername" name="username" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Mật khẩu:</label>
+                        <input type="password" id="registerPassword" name="password" required autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPhone">Số điện thoại:</label>
+                        <input type="tel" id="registerPhone" name="phoneNumber" required placeholder="0123456789">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email:</label>
+                        <input type="email" id="registerEmail" name="email" required placeholder="example@email.com">
+                    </div>                    
+                    <button type="submit" class="btn btn-success" id="registerBtn">
+                        Đăng ký
+                    </button>
+                </form>
+                <button type="button" class="btn btn-link" onclick="showLogin()">
+                    Đã có tài khoản? Đăng nhập
+                </button>
+            </div>
+            
+            <div id="statusMessage" style="display: none;"></div>
+            
+        <% } else if (status === 'confirmed') { %>
+            <h1>Đã xác nhận!</h1>
+            <div class="status-icon confirmed">✓</div>
+            <p class="message success">Bạn đã xác nhận thành công. Đang chuyển hướng...</p>
+            <script>
+                // Tự động đăng nhập và chuyển hướng
+                (async function() {
+                    try {
+                        const token = '<%= token %>';
+                        const loginResponse = await fetch(`/api/qr/login/${token}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const loginData = await loginResponse.json();
+                        
+                        if (loginResponse.ok && loginData.success) {
+                            window.location.href = loginData.redirect || '/?loadHoatDongBenhVien=true';
+                        } else {
+                            document.querySelector('.message').textContent = 'Lỗi đăng nhập: ' + (loginData.error || 'Không thể đăng nhập');
+                            document.querySelector('.message').className = 'message error';
+                        }
+                    } catch (error) {
+                        document.querySelector('.message').textContent = 'Lỗi: ' + error.message;
+                        document.querySelector('.message').className = 'message error';
+                    }
+                })();
+            </script>
+        <% } else { %>
+            <h1>Mã QR không hợp lệ</h1>
+            <div class="status-icon expired">✗</div>
+            <p class="message error"><%= error || 'Mã QR đã hết hạn hoặc không hợp lệ. Vui lòng quét lại mã QR mới.' %></p>
+        <% } %>
+    </div>
+    
+    <% if (status === 'pending') { %>
+    <script>
+        const token = '<%= token %>';
+        const qrToken = '<%= qrToken || token %>';
+        
+        function showLogin() {
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('registerTab').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('registerForm').classList.remove('active');
+        }
+        
+        function showRegister() {
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerTab').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.add('active');
+        }
+        
+        function showMessage(message, type) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = type;
+            statusMessage.style.display = 'block';
+        }
+        
+        // Đăng nhập bằng username + password
+        document.getElementById('loginFormUsername').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtnUsername');
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading"></span>Đang xử lý...';
+            
+            try {
+                const response = await fetch(`/api/qr/authenticate/${token}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    if (data.needRegister) {
+                        showMessage('Tài khoản chưa tồn tại. Vui lòng đăng ký!', 'error');
+                        setTimeout(() => showRegister(), 2000);
+                    } else {
+                        throw new Error(data.error || 'Có lỗi xảy ra');
+                    }
+                    return;
+                }
+                
+                // Xác nhận token
+                await confirmToken();
+                
+            } catch (error) {
+                showMessage(error.message, 'error');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Đăng nhập';
+            }
+        });
+        
+        // Đăng nhập bằng số điện thoại (không cần token)
+        document.getElementById('loginFormPhone').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const phoneNumber = document.getElementById('loginPhone').value;
+            const loginBtn = document.getElementById('loginBtnPhone');
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading"></span>Đang xử lý...';
+            
+            try {
+                const response = await fetch(`/api/qr/authenticate/${token}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phoneNumber })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    if (data.needRegister) {
+                        showMessage('Tài khoản chưa tồn tại. Vui lòng đăng ký!', 'error');
+                        setTimeout(() => showRegister(), 2000);
+                    } else {
+                        throw new Error(data.error || 'Có lỗi xảy ra');
+                    }
+                    return;
+                }
+                
+                // Xác nhận token
+                await confirmToken();
+                
+            } catch (error) {
+                showMessage(error.message, 'error');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Đăng nhập';
+            }
+        });
+        
+        // Đăng ký
+        document.getElementById('registerFormData').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const phoneNumber = document.getElementById('registerPhone').value;
+            const email = document.getElementById('registerEmail').value;
+            const displayName = document.getElementById('registerDisplayName').value;
+            const registerBtn = document.getElementById('registerBtn');
+            
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="loading"></span>Đang đăng ký...';
+            
+            try {
+                const response = await fetch(`/api/qr/register/${token}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password, phoneNumber, email, displayName })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Có lỗi xảy ra');
+                }
+                
+                showMessage('Đăng ký thành công! Đang xác nhận...', 'success');
+                
+                // Xác nhận token sau khi đăng ký
+                await confirmToken();
+                
+            } catch (error) {
+                showMessage(error.message, 'error');
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = 'Đăng ký';
+            }
+        });
+        
+        // Xác nhận token và tự động đăng nhập
+        async function confirmToken() {
+            try {
+                // Bước 1: Xác nhận token
+                const confirmResponse = await fetch(`/api/qr/confirm/${token}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ confirm: 'ok' })
+                });
+                
+                const confirmData = await confirmResponse.json();
+                
+                if (!confirmResponse.ok) {
+                    throw new Error(confirmData.error || 'Không thể xác nhận');
+                }
+                
+                // Bước 2: Tự động đăng nhập
+                showMessage('Xác nhận thành công! Đang đăng nhập...', 'success');
+                
+                const loginResponse = await fetch(`/api/qr/login/${token}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok && loginData.success) {
+                    // Đăng nhập thành công, chuyển hướng đến trang chính
+                    showMessage('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+                    setTimeout(() => {
+                        window.location.href = loginData.redirect || '/?loadHoatDongBenhVien=true';
+                    }, 1000);
+                } else {
+                    throw new Error(loginData.error || 'Không thể đăng nhập');
+                }
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        }               
+    </script>
+    <% } %>
+</body>
+</html>

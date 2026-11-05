@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THỐNG KÊ THEO NGÀY</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .dashboard .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100px;
+        }
+
+        .text-highlight {
+            color: green;
+            font-weight: bold;
+        }
+
+        /* Định dạng chung cho phần form chọn ngày */
+        #dateRangeForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Định dạng các ô input ngày và giờ */
+        /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+        #dateRangeForm label {
+            font-weight: bold;
+            color: #333;
+            /* Màu chữ đậm, xám than */
+        }
+
+        #startDateBCNgay,
+        #endDateBCNgay {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #1a73e8;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startTimeBCNgay,
+        #endTimeBCNgay {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #d20913bd;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startDateBCNgay:focus,
+        #startTimeBCNgay:focus,
+        #endDateBCNgay:focus,
+        #endTimeBCNgay:focus {
+            border-color: #1a73e8;
+            /* Bo viền xanh dương khi chọn */
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+        }
+
+        /* Style cho các ô date theo chuẩn Google */
+        #dateRangeForm input[type="date"],
+        #dateRangeForm input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Khi input được chọn, bo viền màu xanh */
+        #dateRangeForm input[type="date"]:focus,
+        #dateRangeForm input[type="text"]:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+        }
+
+        /* Điều chỉnh chiều rộng ngắn hơn cho startTimeBCNgay và endTimeBCNgay */
+        #startTimeBCNgay,
+        #endTimeBCNgay {
+            width: 80px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #startDateBCNgay,
+        #endDateBCNgay {
+            width: 130px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        canvas {
+            max-width: 800px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>THỐNG KÊ HOẠT ĐỘNG THEO NGÀY</h1>
+    <!-- Date and Time Range Form -->
+    <form id="dateRangeForm">
+        <label for="startDateBCNgay">Từ ngày: </label>
+        <input type="text" name="startDateBCNgay" id="startDateBCNgay" value="<%= defaultDate %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="startTimeBCNgay" name="startTimeBCNgay" value="00:01" />
+
+        <label for="endDateBCNgay">Đến ngày: </label>
+        <input type="text" name="endDateBCNgay" id="endDateBCNgay" value="<%= defaultDate %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="endTimeBCNgay" name="endTimeBCNgay" value="23:59" />
+
+        <!-- Nút không có thuộc tính onclick -->
+        <!--  <button type="button" id="loadReportButton">Xem báo cáo</button>  -->
+        <label type="text" id="loadReportButton" ></label>
+    </form>
+
+    <div>
+        
+        <canvas id="dailyReportChart" style="width:100%;max-width:1000px"></canvas>
+    </div>
+
+</body>
+
+</html>

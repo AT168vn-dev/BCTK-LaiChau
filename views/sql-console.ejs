@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/iconWS.png" type="image/png">
+    <title>SQL Console (PostgreSQL)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-bar {
+            background: #252526;
+            border-bottom: 1px solid #3c3c3c;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .top-bar a {
+            color: #569cd6;
+            text-decoration: none;
+        }
+        .top-bar a:hover { text-decoration: underline; }
+        .top-bar .title {
+            font-weight: 600;
+            color: #cccccc;
+        }
+        .warn {
+            font-size: 12px;
+            color: #cca700;
+            max-width: 520px;
+        }
+        .editor-wrap {
+            padding: 12px 16px 8px;
+            flex-shrink: 0;
+        }
+        #sql-input {
+            width: 100%;
+            min-height: 160px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.45;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px;
+            padding: 12px;
+            resize: vertical;
+        }
+        #sql-input:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+        .actions {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        button.run {
+            background: #0e639c;
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button.run:hover { background: #1177bb; }
+        button.run:disabled { opacity: 0.5; cursor: not-allowed; }
+        .hint { font-size: 12px; color: #858585; }
+        .results {
+            flex: 1;
+            overflow: auto;
+            padding: 0 16px 24px;
+        }
+        .result-block {
+            margin-bottom: 20px;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #252526;
+        }
+        .result-head {
+            padding: 8px 12px;
+            background: #2d2d30;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #9cdcfe;
+            border-bottom: 1px solid #3c3c3c;
+        }
+        .result-meta {
+            padding: 6px 12px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #6a9955;
+            background: #1e1e1e;
+        }
+        /* Giống lưới Oracle / SQL Developer: header ngang, cột có min-width, cuộn ngang */
+        .table-scroll {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: min(70vh, 640px);
+            border-top: 1px solid #3c3c3c;
+            background: #1b1b1c;
+        }
+        table.grid-oracle {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: max-content;
+            min-width: 100%;
+            table-layout: auto;
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            font-size: 13px;
+            writing-mode: horizontal-tb;
+        }
+        table.grid-oracle thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: linear-gradient(180deg, #3d3d42 0%, #323236 100%);
+            color: #e8e8e8;
+            font-weight: 600;
+            border-right: 1px solid #1e1e1e;
+            border-bottom: 2px solid #0078d4;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: bottom;
+            white-space: nowrap;
+            min-width: 88px;
+            max-width: 320px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 1px 0 #0006;
+        }
+        table.grid-oracle thead th:last-child {
+            border-right: none;
+        }
+        table.grid-oracle tbody td {
+            border-right: 1px solid #2a2a2b;
+            border-bottom: 1px solid #2a2a2b;
+            padding: 6px 12px;
+            text-align: left;
+            vertical-align: top;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-width: 72px;
+            max-width: 480px;
+            color: #d4d4d4;
+        }
+        table.grid-oracle tbody td:last-child {
+            border-right: none;
+        }
+        table.grid-oracle tbody tr:nth-child(odd) td {
+            background: #252526;
+        }
+        table.grid-oracle tbody tr:nth-child(even) td {
+            background: #1e1e22;
+        }
+        table.grid-oracle tbody tr:hover td {
+            background: #2a2d36;
+        }
+        .null-val { color: #808080; font-style: italic; }
+        .err-box {
+            margin: 12px 16px;
+            padding: 12px;
+            background: #3a1f1f;
+            border: 1px solid #be1100;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #f48771;
+            white-space: pre-wrap;
+        }
+        .empty-rows {
+            padding: 12px;
+            color: #858585;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div>
+            <span class="title"><i class="fas fa-database"></i> SQL Console</span>
+            <span style="color:#858585;margin-left:12px;font-size:13px;"><%= companyName %></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+            <span style="font-size:13px;color:#858585;"><%= fullname %></span>
+            <a href="/"><i class="fas fa-home"></i> Trang chủ</a>
+        </div>
+    </div>
+    <p class="warn" style="margin:8px 16px 0;">
+        Cảnh báo: Thực thi SQL trực tiếp trên CSDL. Chỉ dùng trong mạng tin cậy. Các câu lệnh chạy tuần tự (autocommit từng lệnh giống psql mặc định).
+    </p>
+    <div class="editor-wrap">
+        <textarea id="sql-input" spellcheck="false" placeholder="SELECT * FROM sys_user LIMIT 10;&#10;-- Nhiều câu lệnh, phân tách bằng dấu ;"></textarea>
+        <div class="actions">
+            <button type="button" class="run" id="btn-run"><i class="fas fa-play"></i> Chạy (Ctrl+Enter)</button>
+            <span class="hint">Hỗ trợ SELECT, INSERT, UPDATE, DELETE, ALTER, … (theo quyền DB)</span>
+        </div>
+    </div>
+    <div class="results" id="results"></div>
+
+    <script>
+        const input = document.getElementById('sql-input');
+        const btn = document.getElementById('btn-run');
+        const resultsEl = document.getElementById('results');
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function escAttr(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;');
+        }
+
+        function renderTable(fields, rows) {
+            if (!fields.length) {
+                return '<div class="empty-rows">Không có cột trả về.</div>';
+            }
+            let html = '<div class="table-scroll"><table class="grid-oracle"><thead><tr>';
+            fields.forEach(f => {
+                const name = String(f);
+                html += '<th title="' + escAttr(name) + '">' + esc(name) + '</th>';
+            });
+            html += '</tr></thead><tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                fields.forEach(f => {
+                    const v = row[f];
+                    if (v === null || v === undefined) {
+                        html += '<td class="null-val">NULL</td>';
+                    } else {
+                        html += '<td>' + esc(String(v)) + '</td>';
+                    }
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+            return html;
+        }
+
+        async function runSql() {
+            const sql = input.value;
+            btn.disabled = true;
+            resultsEl.innerHTML = '<div class="result-meta" style="color:#858585;">Đang chạy…</div>';
+            try {
+                const res = await fetch('/api/sql-exec', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sql })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    let errHtml = '<div class="err-box"><strong>Lỗi</strong>\n' + esc(data.error || 'Không xác định');
+                    if (data.detail) errHtml += '\n' + esc(data.detail);
+                    if (data.hint) errHtml += '\nHINT: ' + esc(data.hint);
+                    if (data.position) errHtml += '\nPOSITION: ' + esc(String(data.position));
+                    errHtml += '</div>';
+                    let partial = '';
+                    if (data.results && data.results.length) {
+                        partial += '<div class="result-meta">Các câu đã chạy thành công trước khi lỗi:</div>';
+                        data.results.forEach(block => {
+                            partial += renderBlock(block);
+                        });
+                    }
+                    resultsEl.innerHTML = partial + errHtml;
+                    return;
+                }
+                let html = '';
+                (data.results || []).forEach(block => { html += renderBlock(block); });
+                resultsEl.innerHTML = html || '<div class="empty-rows">Không có kết quả.</div>';
+            } catch (e) {
+                resultsEl.innerHTML = '<div class="err-box">' + esc(e.message) + '</div>';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function renderBlock(block) {
+            const idx = block.index;
+            const shortSql = block.sql || '';
+            let h = '<div class="result-block">';
+            h += '<div class="result-head">#' + idx + '</div>';
+            h += '<div class="result-meta">' + esc(block.message || '') + '</div>';
+            if (block.fields && block.fields.length && block.rows && block.rows.length) {
+                h += renderTable(block.fields, block.rows);
+            } else if (block.fields && block.fields.length && (!block.rows || !block.rows.length)) {
+                h += '<div class="empty-rows">(0 rows)</div>';
+            }
+            h += '</div>';
+            return h;
+        }
+
+        btn.addEventListener('click', runSql);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                runSql();
+            }
+        });
+    </script>
+</body>
+</html>

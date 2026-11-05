@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>THỐNG KÊ BỆNH VIỆN</title>
+
+  <!-- jQuery và jQuery UI CSS -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <!-- Thư viện jQuery và jQuery UI -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .dashboard .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 100px;
+    }
+
+    .text-highlight {
+      color: green;
+      font-weight: bold;
+    }
+
+    /* Định dạng chung cho phần form chọn ngày */
+    #dateRangeForm {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 10px 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+    }
+
+    /* Định dạng các ô input ngày và giờ */
+    /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+    #dateRangeForm label {
+      font-weight: bold;
+      color: #333;
+      /* Màu chữ đậm, xám than */
+    }
+
+    #startDate,
+    #endDate {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      height: 18px;
+      outline: none;
+      transition: border-color 0.3s ease, color 0.3s ease;
+      font-weight: bold;
+      /* Đậm chữ */
+      color: #1a73e8;
+      /* Màu xanh dương nhạt */
+      background-color: #ffffff;
+      /* Nền trắng */
+    }
+
+    #startTime,
+    #endTime {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      height: 18px;
+      outline: none;
+      transition: border-color 0.3s ease, color 0.3s ease;
+      font-weight: bold;
+      /* Đậm chữ */
+      color: #d20913bd;
+      /* Màu xanh dương nhạt */
+      background-color: #ffffff;
+      /* Nền trắng */
+    }
+
+    #startDate:focus,
+    #startTime:focus,
+    #endDate:focus,
+    #endTime:focus {
+      border-color: #1a73e8;
+      /* Bo viền xanh dương khi chọn */
+      box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+    }
+
+    /* Style cho các ô date theo chuẩn Google */
+    #dateRangeForm input[type="date"],
+    #dateRangeForm input[type="text"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      height: 18px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    /* Khi input được chọn, bo viền màu xanh */
+    #dateRangeForm input[type="date"]:focus,
+    #dateRangeForm input[type="text"]:focus {
+      border-color: #4285f4;
+      box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+    }
+
+    /* Điều chỉnh chiều rộng ngắn hơn cho startTime và endTime */
+    #startTime,
+    #endTime {
+      width: 80px;
+      /* Chiều rộng nhỏ hơn */
+      text-align: center;
+      /* Căn giữa văn bản bên trong */
+    }
+
+    #startDate,
+    #endDate {
+      width: 130px;
+      /* Chiều rộng nhỏ hơn */
+      text-align: center;
+      /* Căn giữa văn bản bên trong */
+    }
+
+    #tong_so_nguoi_benh,
+    #tong_so_luot_kham,
+    #so_luong_nhap_vien,
+    #so_luong_chuyen_vien,
+    #so_luong_dich_vu,
+    #so_luong_bao_hiem {
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    canvas {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .table-panel {
+      width: 100%;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 0;
+    }
+
+    /* Style for the entire table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border: 1px solid #D3D3D3;
+    }
+
+    /* Header styling - keeping it as original */
+    table thead th {
+      background-color: #2e66e9;
+      color: white;
+      padding: 14px;
+      /* Original padding for headers */
+      text-align: center;
+      font-size: 14px;
+      /* Original font size for headers */
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      border: 1px solid #D3D3D3;
+    }
+
+    /* Compact styling for table body cells */
+    table tbody td {
+      padding: 4px 6px;
+      /* Điều chỉnh giá trị này để tăng chiều cao */
+      font-size: 14px;
+      text-align: center;
+      border: 1px solid #D3D3D3;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    /* Nếu muốn tăng độ cao cụ thể mà không phụ thuộc vào padding */
+    table tbody tr {
+      height: 26px;
+      /* Tăng chiều cao của mỗi hàng, điều chỉnh giá trị theo ý muốn */
+    }
+
+    .total-row td {
+      font-weight: bold !important;
+    }
+
+    /* Left-align for "Tên Phòng Khám" column */
+    .hrl_name {
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Right-align for currency columns */
+    .currency {
+      text-align: right;
+      font-size: 14px;
+    }
+
+    /* Định dạng các hàng để chia đều */
+    table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    table tbody tr:hover {
+      background-color: #e6f7ff;
+    }
+
+    .row-sunday {
+
+      /* Màu nền đỏ nhạt 
+      background-color: #060716 !important;
+      */
+      color: red;
+      /* Màu chữ đỏ */
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h1>HOẠT ĐỘNG BỆNH VIỆN</h1>
+    <!-- Date and Time Range Form -->
+    <form id="dateRangeForm">
+      <label for="startDate">Từ ngày: </label>
+      <input type="text" name="startDate" id="startDate" value="<%= defaultDate %>" placeholder="dd/MM/yyyy" />
+      <input type="text" id="startTime" name="startTime" value="00:00:01" pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+        title="Nhập thời gian theo định dạng HH:MM">
+
+      <label for="endDate">Đến ngày: </label>
+      <input type="text" name="endDate" id="endDate" value="<%= defaultDate %>" placeholder="dd/MM/yyyy" />
+      <input type="text" id="endTime" name="endTime" readonly pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+        title="Nhập thời gian theo định dạng HH:MM">
+    </form>
+    <br />
+    <div>
+      <h2>THỐNG KÊ HÔM NAY</h2>
+
+      <div class="dashboard">
+        <!-- Bed Usage Card -->
+        <div class="card">
+          <h2>TỔNG SỐ NGƯỜI BỆNH</h2>
+          <p style="text-align: center;"><label id="tong_so_nguoi_benh"
+              style="font-size: 60px; color: rgb(46, 16, 218);"></label></p>
+          <p><strong id="tong_so_nguoi_benh"></strong></p>
+        </div>
+
+        <div class="card">
+          <h2>TỔNG SỐ LƯỢT KHÁM</h2>
+          <p style="text-align: center;"><label id="tong_so_luot_kham"
+              style="font-size: 60px; color: rgb(211, 39, 223);"></label></p>
+        </div>
+
+        <div class="card">
+          <h2>BẢO HIỂM Y TẾ</h2>
+          <p style="text-align: center;"><label id="so_luong_bao_hiem"
+              style="font-size: 60px; color: rgb(211, 39, 3);"></label></p>
+        </div>
+
+        <div class="card">
+          <h2>TỔNG SỐ NHẬP VIỆN</h2>
+          <p style="text-align: center;"><label id="so_luong_nhap_vien" style="font-size: 60px; color: red;"></label>
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>TỔNG SỐ CHUYỂN VIỆN</h2>
+          <p style="text-align: center;"><label id="so_luong_chuyen_vien"
+              style="font-size: 60px; color: rgb(26, 215, 136);"></label></p>
+        </div>
+
+        <div class="card">
+          <h2>DỊCH VỤ</h2>
+          <p style="text-align: center;"><label id="so_luong_dich_vu"
+              style="font-size: 60px; color: darkorange"></label>
+          </p>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div>
+      <h2>THỐNG KÊ THEO NGÀY</h2>
+      <div class="table-panel">
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2" style="width: 6%;">STT</th>
+              <th rowspan="2" style="width: 12%;">Thứ</th>
+              <th rowspan="2" style="width: 12%;">Ngày Tháng</th>
+              <th colspan="7" style="width: 70%;">THỐNG KÊ TOÀN VIỆN</th>
+            </tr>
+            <tr>
+              <th>Người Bệnh</th>
+              <th>Lượt Khám</th>
+              <th>Nhập Viện</th>
+              <th>Chuyển Viện</th>
+              <th>&ensp;&ensp;BHYT&ensp;&ensp;</th>
+              <th>&ensp;&ensp;Dịch Vụ&ensp;&ensp;</th>
+            </tr>
+          </thead>
+          <tbody id="table-body-hoatdongbenhvien">
+            <!-- Nội dung bảng sẽ được chèn vào đây -->
+          </tbody>
+          <tbody id="table-body2-hoatdongbenhvien" class="total-row">
+            <!-- Nội dung bảng sẽ được chèn vào đây -->
+          </tbody>
+        </table>
+      </div>
+      <!-- Vẽ biểu đồ thì dùng cái này 
+        <canvas id="thongKeTheoNgayReportChart" style="width:100%;max-width:1100px"></canvas> -->
+    </div>
+    <br />
+    <br />
+  </div>
+  <script src="/js/scripts.js"></script>
+</body>
+
+</html>

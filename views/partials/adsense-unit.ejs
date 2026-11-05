@@ -1,0 +1,15 @@
+<%#
+  Khối quảng cáo AdSense - hiển thị tại vị trí include.
+  Trang phải đã include partials/adsense (script) trước khi dùng partial này.
+  Có thể truyền slotId khác: include('partials/adsense-unit', { slotId: 'xxx' })
+-%>
+<div class="adsense-container" style="margin: 12px 0; min-height: 90px;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-format="autorelaxed"
+         data-ad-client="ca-pub-5767035116571734"
+         data-ad-slot="<%= typeof slotId !== 'undefined' ? slotId : '6844921275' %>"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</div>

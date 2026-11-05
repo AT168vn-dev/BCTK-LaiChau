@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THỐNG KÊ TỔNG HỢP CHI PHÍ THEO KHOA PHÒNG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        html,
+        body {
+            height: auto;
+            overflow: visible;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Định dạng chung cho phần form chọn ngày */
+        #dateRangeForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Định dạng các ô input ngày và giờ */
+        /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+        #dateRangeForm label {
+            font-weight: bold;
+            color: #333;
+            /* Màu chữ đậm, xám than */
+        }
+
+        #startDateBCTHCPKhoaPhong,
+        #endDateBCTHCPKhoaPhong {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #1a73e8;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startTimeBCTHCPKhoaPhong,
+        #endTimeBCTHCPKhoaPhong {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #d20913bd;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startDateBCTHCPKhoaPhong:focus,
+        #startTimeBCTHCPKhoaPhong:focus,
+        #endDateBCTHCPKhoaPhong:focus,
+        #endTimeBCTHCPKhoaPhong:focus {
+            border-color: #1a73e8;
+            /* Bo viền xanh dương khi chọn */
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+        }
+
+        /* Style cho các ô date theo chuẩn Google */
+        #dateRangeForm input[type="date"],
+        #dateRangeForm input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Khi input được chọn, bo viền màu xanh */
+        #dateRangeForm input[type="date"]:focus,
+        #dateRangeForm input[type="text"]:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+        }
+
+        /* Điều chỉnh chiều rộng ngắn hơn cho startTimeBCTHCPKhoaPhong và endTimeBCTHCPKhoaPhong */
+        #startTimeBCTHCPKhoaPhong,
+        #endTimeBCTHCPKhoaPhong {
+            width: 80px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #startDateBCTHCPKhoaPhong,
+        #endDateBCTHCPKhoaPhong {
+            width: 130px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        canvas {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        #zButtonBCTHCPKhoaPhong {
+            font-size: 14px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #2e7d32;
+            /* Màu xanh đậm */
+            color: #e0f7fa;
+            /* Màu chữ sáng hơn */
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #zButtonBCTHCPKhoaPhong:hover {
+            background-color: #074705;
+            /* Màu nền xanh đậm hơn khi rê chuột vào */
+            color: #e1ee2e;
+            /* Chữ màu trắng sáng khi rê chuột vào */
+        }
+
+        .table-panel {
+            width: 100%;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 0;
+        }
+
+        /* Style for the entire table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Header styling - keeping it as original */
+        table thead th {
+            background-color: #2e66e9;
+            color: white;
+            padding: 12px;
+            /* Original padding for headers */
+            text-align: center;
+            font-size: 14px;
+            /* Original font size for headers */
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Compact styling for table body cells */
+        table tbody td {
+            padding: 4px 6px;
+            /* Điều chỉnh giá trị này để tăng chiều cao */
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #D3D3D3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        /* Nếu muốn tăng độ cao cụ thể mà không phụ thuộc vào padding */
+        table tbody tr {
+            height: 26px;
+            /* Tăng chiều cao của mỗi hàng, điều chỉnh giá trị theo ý muốn */
+        }
+
+        /* Left-align for "Tên Khoa Phòng" column */
+        .hrl_name {
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Right-align for currency columns */
+        .currency {
+            text-align: right;
+            font-size: 13px;
+        }
+
+        /* Định dạng các hàng để chia đều */
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #e6f7ff;
+        }
+
+        #table-body-thcp-khoa-phong {
+            min-height: 300px;
+            /* Đặt chiều cao tối thiểu */
+            overflow-y: auto;
+            /* Thêm thanh cuộn dọc nếu nội dung quá dài */
+        }
+
+        .table-container {
+            max-height: 500px;
+            /* Giới hạn chiều cao */
+            overflow-y: scroll;
+            /* Thêm thanh cuộn dọc */
+        }
+        
+        .total-row td {
+            font-weight: bold !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>THỐNG KÊ TỔNG HỢP CHI PHÍ THEO KHOA PHÒNG</h1>
+
+    <form id="dateRangeForm">
+        <label for="startDateBCTHCPKhoaPhong">Từ ngày: </label>
+        <input type="text" name="startDateBCTHCPKhoaPhong" id="startDateBCTHCPKhoaPhong"
+            value="<%= startDateBCTHCPKhoaPhong %>" placeholder="dd/MM/yyyy" />
+        <input type="text" id="startTimeBCTHCPKhoaPhong" name="startTimeBCTHCPKhoaPhong" value="07:30"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <label for="endDateBCTHCPKhoaPhong">Đến ngày: </label>
+        <input type="text" name="endDateBCTHCPKhoaPhong" id="endDateBCTHCPKhoaPhong"
+            value="<%= endDateBCTHCPKhoaPhong %>" placeholder="dd/MM/yyyy" />
+        <input type="text" id="endTimeBCTHCPKhoaPhong" name="endTimeBCTHCPKhoaPhong" value="07:29"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <button type="button" id="zButtonBCTHCPKhoaPhong">Lấy Báo Cáo</button>
+    </form>
+
+    <div>
+        <h2>THỐNG KÊ CHI PHÍ THEO KHOA</h2>
+
+        <div class="table-panel">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 5%;">STT</th>
+                        <th rowspan="2" style="width: 35%;">Tên Khoa Phòng</th>
+                        <th rowspan="2" style="width: 20%;">Tổng Chi Phí</th>
+                        <th rowspan="2" style="width: 20%;">BHYT</th>
+                        <th rowspan="2" style="width: 20%;">Dịch Vụ</th>
+                        <th rowspan="2" style="width: 20%;">Chênh Lệch</th>
+                        <th rowspan="2" style="width: 20%;">Phí Khám</th>
+                        <th rowspan="2" style="width: 20%;">Phí Giường</th>
+                        <th rowspan="2" style="width: 20%;">XN Hóa Sinh</th>
+                        <th rowspan="2" style="width: 20%;">XN Vi Sinh</th>
+                        <th rowspan="2" style="width: 20%;">XN Miễn Dịch</th>
+                        <th rowspan="2" style="width: 20%;">XN GPB</th>
+                        <th rowspan="2" style="width: 20%;">XN Khác</th>
+                        <th rowspan="2" style="width: 20%;">Điện Tim</th>
+                        <th rowspan="2" style="width: 20%;">Điện Não</th>
+                        <th rowspan="2" style="width: 20%;">X-Quang</th>
+                        <th rowspan="2" style="width: 20%;">CT-Scanner</th>
+                        <th rowspan="2" style="width: 20%;">MRI</th>
+                        <th rowspan="2" style="width: 20%;">NS TMH</th>
+                        <th rowspan="2" style="width: 20%;">NS Tiêu Hóa </th>
+                        <th rowspan="2" style="width: 20%;">NS Hô Hấp</th>
+                        <th rowspan="2" style="width: 20%;">NS Tử Cung</th>
+                        <th rowspan="2" style="width: 20%;">NS Khác</th>
+                        <th rowspan="2" style="width: 20%;">Siêu Âm 2D</th>
+                        <th rowspan="2" style="width: 20%;">Siêu Âm 4D</th>
+                        <th rowspan="2" style="width: 20%;">Siêu Âm Tim</th>
+                        <th rowspan="2" style="width: 20%;">Phẫu Thuật</th>
+                        <th rowspan="2" style="width: 20%;">Thủ Thuật</th>
+                        <th rowspan="2" style="width: 20%;">Thuốc - Vật Tư</th>
+                        <th rowspan="2" style="width: 20%;">Chi Phí Khác</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body-thcp-khoa-phong">
+                    <!-- Nội dung bảng sẽ được chèn vào đây -->
+                </tbody>
+                <tbody id="table-body2-thcp-khoa-phong" class="total-row">
+                    <!-- Nội dung bảng sẽ được chèn vào đây -->
+                </tbody>
+            </table>
+        </div>        
+    </div>
+
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>

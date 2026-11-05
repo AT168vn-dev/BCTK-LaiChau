@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/iconWS.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Thống Kê Bệnh Viện</title>
+    <!-- Thêm FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/mobile-material.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0044cc;
+            /* Màu xanh của Windows */
+            color: white;
+            /* Màu chữ trắng */
+            padding: 10px 20px;
+            border-bottom: 2px solid #ddd;
+            height: 33px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0;
+        }
+
+        /* Phần main sẽ luôn chiếm hết chiều cao màn hình */
+        .main {
+            display: flex;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            /* Thêm hiệu ứng mượt */
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            background-color: #003399;
+            height: 100%;
+            color: white;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            /* Hiệu ứng mượt */
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-x: auto;
+            box-sizing: border-box;
+            max-height: 100%;
+            position: relative;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Menu mẹ căn lề trái, chỉnh khoảng cách giữa icon và tiêu đề */
+        .sidebar ul li {
+            display: flex;
+            justify-content: flex-start;
+            /* Đảm bảo text và icon căn trái */
+            align-items: center;
+            padding: 15px;
+            padding-left: 20px;
+            /* Căn lề cho menu mẹ */
+            background-color: #003399;
+            /* Màu nền cho menu chính */
+            color: white;
+            cursor: pointer;
+            border-bottom: 1px solid #0044cc;
+            transition: background-color 0.3s ease, border 0.3s ease;
+            position: relative;
+            /* Cho phép mũi tên đặt tuyệt đối */
+        }
+
+        /* Giảm khoảng cách giữa icon và tiêu đề menu */
+        .sidebar ul li i {
+            margin-right: 10px;
+        }
+
+        /* Mũi tên nằm bên phải của menu mẹ */
+        .sidebar ul li .arrow {
+            position: absolute;
+            right: 20px;
+            /* Căn mũi tên cách lề phải 20px */
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Khi mở menu, xoay mũi tên 90 độ */
+        .sidebar ul li.active .arrow {
+            transform: rotate(90deg);
+        }
+
+        /* Menu con căn lề trái nhiều hơn */
+        .submenu {
+            list-style-type: none;
+            padding-left: 20px;
+            background-color: #0044cc;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+            /* Hiệu ứng sổ xuống */
+        }
+
+        /* Mục menu con */
+        .submenu li {
+            padding: 10px;
+            padding-left: 40px;
+            /* Căn lề cho menu con */
+            background-color: #0044cc;
+            border-bottom: 1px solid #0056b3;
+            cursor: pointer;
+            color: #e6e6ff;
+        }
+
+        /* Biểu tượng và text cho các mục menu con */
+        .submenu li i {
+            margin-right: 10px;
+        }
+
+        /* Hiệu ứng hover cho menu con */
+        .submenu li:hover {
+            background-color: #3366ff;
+        }
+
+        /* Hiệu ứng hover cho menu mẹ */
+        .sidebar ul li:hover {
+            background-color: #0056b3;
+        }
+
+        .company-name {
+            font-size: 20px;
+            flex: 1;
+            min-width: 0;
+            font-weight: bold;
+            color: #fffefe;
+        }
+
+        .header-left img {
+            max-height: 40px;
+            margin-right: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header-right h3 {
+            margin: 0;
+        }
+
+        .header-right img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+
+        .header-right span {
+            font-size: 16px;
+            color: white;
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Rê chuột vào IP */
+        #user-info-link:hover {
+            color: #ff6600;
+            /* Màu sáng khi hover */
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h2 {
+            color: #007bff;
+            /* Màu xanh dương cho chữ */
+            font-weight: bold;
+            /* In đậm chữ */
+            border-bottom: 1px solid #007bff;
+            /* Đường kẻ mỏng màu xanh dương */
+            padding-bottom: 5px;
+            /* Khoảng cách giữa chữ và đường kẻ */
+        }
+
+        .sidebar.hidden {
+            display: none;
+        }
+
+        .content.expanded {
+            width: 100%;
+            padding-left: 0;
+            transition: width 0.3s ease;
+        }
+
+        .toggle-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .sidebar-hidden .sidebar {
+            margin-left: -250px;
+            /* Đẩy sidebar ra ngoài màn hình */
+        }
+
+        .sidebar-hidden .content {
+            flex-grow: 1;
+            width: 100%;
+            /* Mở rộng content-area */
+            transition: all 0.3s ease;
+            /* Hiệu ứng mượt */
+        }
+
+        #toggle-sidebar-btn {
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        #user-info {
+            display: grid;
+            justify-items: end;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: #0044cc;
+            color: white;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .user-info-panel {
+            grid-area: 1 / 1;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .user-info-panel.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        #user-info-name {
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info-login-count {
+            color: #ffcc00;
+            font-variant-numeric: tabular-nums;
+            min-width: 2.5em;
+            display: inline-block;
+            text-align: right;
+        }
+
+        /* Khi di chuột vào */
+        #user-info:hover {
+            background-color: #003399;
+            /* Nền đậm hơn */
+            color: #ffcc00;
+            /* Chữ chuyển vàng */
+        }
+
+        /* Màu chữ trong dấu ngoặc */
+        #user-info-ip {
+            color: white;
+            /* Mặc định là trắng */
+        }
+
+        #user-info:hover #user-info-ip {
+            color: #ffcc00;
+            /* Chuyển vàng khi hover */
+        }
+
+        /* Desktop: ẩn phần tổng số lượt dành cho mobile */
+        .user-info-total-mobile {
+            display: none !important;
+        }
+
+        /* CSS cho hiệu ứng loading và transition */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        .loading-text {
+            color: #3498db;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fade-enter {
+            opacity: 0;
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .fade-exit {
+            opacity: 1;
+        }
+
+        .fade-exit-active {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* CSS cho skeleton loading */
+        .skeleton-loading {
+            animation: skeleton-loading 1s linear infinite alternate;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-color: hsl(200, 20%, 80%);
+            }
+            100% {
+                background-color: hsl(200, 20%, 95%);
+            }
+        }
+
+        .skeleton-text {
+            width: 100%;
+            height: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .skeleton-header {
+            width: 50%;
+            height: 2rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Style cho menu item active */
+        .submenu li.active-item {
+            background-color: #1a75ff !important;
+            color: white !important;
+            border-left: 4px solid #ffcc00 !important;
+        }
+
+        /* Hiệu ứng hover cho menu item */
+        .submenu li:hover {
+            background-color: #1a75ff !important;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+
+        /* Màn hình lớn (desktop): chỉ hiển thị marquee (chữ chạy); ẩn bản tĩnh */
+        .header-marquee .header-marquee-static {
+            display: none;
+        }
+
+        /* ========== MOBILE: Chuẩn Material Design (max-width: 768px) ========== */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            /* Topbar mobile: gọn hơn, phù hợp mắt nhìn */
+            .header {
+                height: 48px;
+                min-height: 48px;
+                padding: 0 6px 0 4px;
+                padding-left: max(6px, env(safe-area-inset-left));
+                padding-right: max(6px, env(safe-area-inset-right));
+                flex-wrap: nowrap;
+                gap: 4px;
+            }
+
+            .header-left {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .header-left img {
+                max-height: 28px;
+                margin-right: 2px;
+            }
+
+            /* Nút menu: vừa đủ chạm, không quá to */
+            #toggle-sidebar-btn {
+                min-width: 40px;
+                min-height: 40px;
+                padding: 8px;
+                margin: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .company-name {
+                flex: 1;
+                min-width: 0;
+                width: auto;
+                font-size: 12px;
+                overflow: hidden;
+            }
+
+            .header-marquee {
+                margin: 0;
+                width: 100%;
+            }
+
+            .header-marquee marquee,
+            .header-marquee .header-marquee-scroll,
+            .header-marquee h3 {
+                font-size: 12px !important;
+                font-weight: 500;
+            }
+
+            /* Mobile: tắt chữ chạy, chỉ hiển thị tên tĩnh */
+            .header-marquee .header-marquee-scroll {
+                display: none !important;
+            }
+            .header-marquee .header-marquee-static {
+                display: block !important;
+            }
+
+            .header-right {
+                flex-shrink: 0;
+            }
+
+            .header-right h3 {
+                margin: 0;
+                font-size: 12px;
+            }
+
+            #user-info {
+                padding: 6px 8px;
+                min-height: 32px;
+                display: inline-flex;
+                align-items: center;
+                font-size: 11px;
+            }
+
+            /* Mobile: ẩn IP và chỉ hiển thị tên + tổng số lượt */
+            .user-info-ip-wrap {
+                display: none !important;
+            }
+            .user-info-total-mobile {
+                display: inline-block;
+                margin-left: 4px;
+                color: #ffcc00;
+                min-width: 3.5em;
+                font-variant-numeric: tabular-nums;
+                text-align: left;
+            }
+
+            #user-info-name {
+                max-width: 42vw;
+            }
+
+            /* Main + Sidebar: drawer gọn, không chiếm quá nhiều màn hình */
+            .main {
+                height: calc(100vh - 48px);
+                position: relative;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 48px;
+                left: 0;
+                bottom: 0;
+                width: min(240px, 72vw);
+                max-width: 240px;
+                height: calc(100vh - 48px);
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+                box-shadow: none;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .sidebar.is-open {
+                transform: translateX(0);
+                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+            }
+
+            /* Overlay khi mở menu */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 48px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .sidebar-overlay.is-visible {
+                display: block;
+                opacity: 1;
+            }
+
+            /* Ẩn sidebar bằng margin khi desktop ẩn (giữ tương thích) */
+            .sidebar-hidden .sidebar {
+                margin-left: 0;
+                transform: translateX(-100%);
+            }
+
+            /* Menu mục: chữ và padding nhỏ gọn, dễ nhìn */
+            .sidebar ul li {
+                padding: 10px 12px;
+                min-height: 40px;
+                font-size: 13px;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .sidebar ul li .arrow {
+                right: 10px;
+                font-size: 12px;
+            }
+
+            .submenu li {
+                padding: 10px 12px 10px 36px;
+                min-height: 40px;
+                font-size: 12px;
+            }
+
+            .content {
+                padding: 12px;
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+
+            .content.expanded {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Panel -->
+    <div class="header">
+        <!-- Logo và tên công ty -->
+        <div class="header-left">
+            <img src="<%= logoImageBV %>">
+            <button id="toggle-sidebar-btn"
+                style="background: none; border: none; cursor: pointer; color: white; font-size: 20px; margin-left: 10px;">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="company-name">
+            <div class="header-marquee">
+                <marquee behavior="scroll" direction="left" class="header-marquee-scroll" scrollamount="5" scrolldelay="40">
+                    <h3 style="color: rgb(222, 243, 100); margin: 0; white-space: nowrap;">
+                        <%= companyName %>
+                        <% if (showLicenseWarning) { %>
+                            &nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;
+                            <span style="color: #ffcc00;">Còn <%= licenseDaysRemaining %> ngày - Chương trình sẽ hết thời hạn sử dụng. Thời hạn đến ngày <%= licenseExpiryDisplay %>.</span>
+                            &nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;
+                            <%= companyName %>
+                            &nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;
+                            <span style="color: #ffcc00;">Còn <%= licenseDaysRemaining %> ngày - Chương trình sẽ hết thời hạn sử dụng. Thời hạn đến ngày <%= licenseExpiryDisplay %>.</span>
+                        <% } %>
+                    </h3>
+                </marquee>
+                <div class="header-marquee-static">
+                    <h3 style="color: rgb(222, 243, 100); margin: 0;">
+                        <%= companyName %>
+                        <% if (showLicenseWarning) { %>
+                            &nbsp;•&nbsp;
+                            <span style="color: #ffcc00;">Còn <%= licenseDaysRemaining %> ngày - Chương trình sẽ hết thời hạn sử dụng. Thời hạn đến ngày <%= licenseExpiryDisplay %>.</span>
+                        <% } %>
+                    </h3>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Thông tin người dùng -->
+        <div class="header-right">
+            <a href="javascript:void(0)" id="user-info-link" style="color: white; text-decoration: none;">
+                <h3>
+                    <div id="user-info">
+                        <div class="user-info-panel" id="user-info-profile">
+                            <span id="user-info-name"><%= fullname %></span>
+                            <span class="user-info-ip-wrap">(<span id="user-info-ip" style="color: white;"><%= ip %></span>)</span>
+                            <span class="user-info-total-mobile" id="user-info-total-mobile"></span>
+                        </div>
+                        <div class="user-info-panel is-hidden" id="user-info-logins">
+                            <span>Lượt Truy Cập: <span id="user-info-login-count" class="user-info-login-count">0</span></span>
+                        </div>
+                    </div>
+                </h3>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Main content với sidebar và nội dung động -->
+    <div class="main">
+        <!-- Overlay cho mobile khi mở menu -->
+        <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar-area">
+            <ul>
+                <% if (isAdmin) { %>
+                    <li onclick="toggleMenu('menu1', this)">
+                        <i class="fas"></i> <!-- Icon cho menu mẹ "Quản trị" -->
+                        Quản trị
+                        <span class="arrow" id="arrow-menu1">▶</span>
+                    </li>
+
+                    <ul id="menu1" class="submenu">
+                        <li onclick="loadNguoiSuDung()" id="NguoiSuDung">
+                            <i class="fas fa-user"></i>
+                            Người sử dụng
+                        </li>
+                        <li onclick="loadNguoiSuDung_pq()" id="NguoiSuDung_pq">
+                            <i class="fas fa-lock"></i>
+                            Phân quyền
+                        </li>
+                    </ul>
+                    <% } %>
+
+                        <li onclick="toggleMenu('menu2', this)">
+                            <i class="fas"></i>
+                            Thống kê
+                            <span class="arrow" id="arrow-menu2">▶</span>
+                        </li>
+
+                        <ul id="menu2" class="submenu">
+                            <li onclick="loadhoatdongbenhvien();" id="menuHoatDongBenhVien" class="menu-item">
+                                <i class="fa-solid fa-hospital"></i>
+                                Hoạt động bệnh viện
+                            </li>
+                            <li onclick="loadBaoCaoPhongKham();" id="menuBaoCaoPhongKham" class="menu-item">
+                                <i class="fas fa-laptop-medical"></i>
+                                Phòng Khám
+                            </li>
+                            <li onclick="loadBaoCaoDieuTriNoiTru();" id="menuBaoCaoDieuTriNoiTru" class="menu-item">
+                                <i class="fas fa-procedures"></i>
+                                Điều Trị Nội Trú
+                            </li>
+                            <li onclick="loadBaoCaoCLS();" id="menuBaoCaoCLS" class="menu-item">
+                                <i class="fas fa-microscope"></i>
+                                Cận lâm sàng
+                            </li>
+                            <li onclick="loadBaoCaopttt();" id="menuBaoCaoPTTT" class="menu-item">
+                                <i class="fas fa-joint"></i>
+                                Phẫu thuật thủ thuật
+                            </li>
+                            <li onclick="loadBaoCaoChiPhiTheoKhoaPhong();" id="menuBaoCaoChiPhi" class="menu-item">
+                                <i class="fa-solid fa-money-check-dollar"></i>
+                                Tổng hợp chi phí theo khoa phòng
+                            </li>
+                            <li onclick="loadBaoCaoCongSuatGiuong();" id="menuBaoCaoCongSuat" class="menu-item">
+                                <i class="fa-solid fa-person-booth"></i>
+                                Công suất giường
+                            </li>
+                        </ul>
+
+                        <li onclick="toggleMenu('menu4', this)">
+                            <i class="fas"></i>
+                            Dashboard
+                            <span class="arrow" id="arrow-menu4">▶</span>
+                        </li>
+
+                        <ul id="menu4" class="submenu">
+                            <li onclick="loadBaoCaoNgay()">
+                                <i class="fas fa-chart-line"></i>
+                                Báo cáo ngày
+                            </li>
+                            <li onclick="loadBaoCaoTuan()">
+                                <i class="fas fa-chart-bar"></i>
+                                Báo cáo tuần
+                            </li>
+                            <li onclick="loadDashBoardBSKham()">
+                                <i class="fas fa-chart-bar"></i>
+                                Lượt Khám
+                            </li>
+                        </ul>
+
+                        <li onclick="loadLienHe()">
+                            <i class="fas fa-comment"></i>
+                            Liên hệ
+                        </li>
+
+                        <!-- <li onclick="loadPdfToWord()">
+                            <i class="fas fa-file-word"></i>
+                            PDF -> Word
+                        </li> -->
+            </ul>
+        </div>
+
+        <!-- Khung hiển thị nội dung -->
+        <div class="content" id="content-area">
+            <!-- Nội dung sẽ được tải vào đây -->
+        </div>
+    </div>
+
+    <!-- Thêm div loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Đang tải dữ liệu...</div>
+    </div>
+
+    <script>
+        // Đóng tất cả các menu con
+        function closeAllMenus() {
+            const submenus = document.querySelectorAll('.submenu');
+            submenus.forEach(menu => {
+                menu.style.maxHeight = '0'; // Đóng menu con
+            });
+
+            const arrows = document.querySelectorAll('.arrow');
+            arrows.forEach(arrow => {
+                arrow.innerHTML = '▶'; // Đổi tất cả mũi tên về trạng thái ngang
+            });
+
+            const menuItems = document.querySelectorAll('.sidebar ul li');
+            menuItems.forEach(item => item.classList.remove('active')); // Bỏ active khỏi tất cả menu mẹ
+        }
+
+        // Mở menu và đóng các menu con khác, thay đổi mũi tên
+        function toggleMenu(menuId, menuItem) {
+            const menu = document.getElementById(menuId);
+            const arrow = document.getElementById('arrow-' + menuId);
+
+            if (menu.style.maxHeight === '0px' || menu.style.maxHeight === '') {
+                closeAllMenus(); // Đóng các menu khác
+                menu.style.maxHeight = menu.scrollHeight + 'px'; // Mở menu con
+                arrow.innerHTML = '▼'; // Mũi tên xuống khi mở
+                menuItem.classList.add('active'); // Thêm class active để thêm viền khi click
+            } else {
+                menu.style.maxHeight = '0'; // Đóng menu con
+                arrow.innerHTML = '▶'; // Mũi tên ngang khi đóng
+                menuItem.classList.remove('active'); // Bỏ class active
+            }
+        }
+
+        // Hiển thị nội dung tương ứng khi click vào mục menu con
+        function showPanel(panelId) {
+            // Ẩn tất cả các panel trước
+            const allPanels = document.querySelectorAll('.panel');
+            allPanels.forEach(panel => panel.classList.add('hidden'));
+
+            // Hiển thị panel được chọn
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.remove('hidden'); // Hiển thị panel
+            } else {
+                console.error(`Phần tử với ID ${panelId} không tồn tại.`);
+            }
+        }
+
+        //Thoát chương trình
+        document.getElementById('user-info-link').addEventListener('click', function () {
+            window.location.href = '/logout'; // Chuyển hướng tới trang logout
+        });
+
+        // Đóng các menu khác và mở menu "Thống kê" khi trang dm-hoatdongbenhvien được tải
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const loadHoatDongBenhVien = urlParams.get('loadHoatDongBenhVien');
+
+            // Nếu `loadHoatDongBenhVien` có giá trị `true`, tự động tải `dm-hoatdongbenhvien`
+            if (loadHoatDongBenhVien === 'true') {
+                loadhoatdongbenhvien(); // Gọi hàm load `dm-hoatdongbenhvien`
+                toggleMenu('menu2', document.querySelector('#menu2').parentNode); // Mở menu "Thống kê"
+            }
+        });
+        document.getElementById('toggle-sidebar-btn').addEventListener('click', function () {
+            const mainElement = document.querySelector('.main');
+            const sidebar = document.getElementById('sidebar-area');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (window.innerWidth <= 768) {
+                // Mobile: dùng drawer + overlay
+                if (sidebar.classList.contains('is-open')) {
+                    sidebar.classList.remove('is-open');
+                    if (overlay) overlay.classList.remove('is-visible');
+                    document.body.style.overflow = '';
+                } else {
+                    sidebar.classList.add('is-open');
+                    if (overlay) overlay.classList.add('is-visible');
+                    document.body.style.overflow = 'hidden';
+                }
+            } else {
+                // Desktop: ẩn/hiện sidebar như cũ
+                if (mainElement.classList.contains('sidebar-hidden')) {
+                    mainElement.classList.remove('sidebar-hidden');
+                } else {
+                    mainElement.classList.add('sidebar-hidden');
+                }
+            }
+        });
+
+        // Đóng sidebar mobile khi click overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar-area');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('is-open')) {
+                sidebar.classList.remove('is-open');
+                this.classList.remove('is-visible');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Khi resize lên desktop: đóng drawer và ẩn overlay
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('sidebar-area');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar) sidebar.classList.remove('is-open');
+                if (overlay) overlay.classList.remove('is-visible');
+                document.body.style.overflow = '';
+            }
+        });
+
+        //login Tổng số người truy cập
+        let isShowingLogins = false;
+
+        function fetchTotalLogins() {
+            return fetch('/api/total-logins')
+                .then(response => response.json())
+                .then(data => data.total || 0)
+                .catch(error => {
+                    console.error('Lỗi khi lấy tổng số lượt truy cập:', error);
+                    return 0; // Trả về 0 nếu có lỗi
+                });
+        }
+
+        function isMobileView() {
+            return window.matchMedia('(max-width: 768px)').matches;
+        }
+
+        function updateMobileUserInfo(totalLogins) {
+            const el = document.getElementById('user-info-total-mobile');
+            if (el && totalLogins !== undefined) {
+                el.textContent = ' · ' + totalLogins;
+            }
+        }
+
+        function toggleUserInfo() {
+            const profilePanel = document.getElementById('user-info-profile');
+            const loginsPanel = document.getElementById('user-info-logins');
+            const loginCountEl = document.getElementById('user-info-login-count');
+
+            if (isMobileView()) {
+                fetchTotalLogins().then(updateMobileUserInfo);
+                return;
+            }
+
+            if (isShowingLogins) {
+                profilePanel.classList.remove('is-hidden');
+                loginsPanel.classList.add('is-hidden');
+                isShowingLogins = false;
+                return;
+            }
+
+            fetchTotalLogins().then(totalLogins => {
+                if (loginCountEl) loginCountEl.textContent = totalLogins;
+                profilePanel.classList.add('is-hidden');
+                loginsPanel.classList.remove('is-hidden');
+                isShowingLogins = true;
+            });
+        }
+
+        // Khởi tạo: tải số lượt sớm để khối header giữ kích thước cố định khi chuyển đổi
+        fetchTotalLogins().then(totalLogins => {
+            const loginCountEl = document.getElementById('user-info-login-count');
+            if (loginCountEl) loginCountEl.textContent = totalLogins;
+            if (isMobileView()) updateMobileUserInfo(totalLogins);
+        });
+
+        setInterval(function() {
+            if (isMobileView()) {
+                fetchTotalLogins().then(updateMobileUserInfo);
+            } else {
+                toggleUserInfo();
+            }
+        }, 6000);        
+        
+        // Hàm hiển thị loading
+        function showLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'flex';
+        }
+
+        // Hàm ẩn loading
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Hàm tạo skeleton loading
+        function createSkeletonLoading() {
+            return `
+                <div class="skeleton-loading skeleton-header"></div>
+                ${Array(5).fill('<div class="skeleton-loading skeleton-text"></div>').join('')}
+            `;
+        }
+
+        // Hàm cập nhật URL trên trình duyệt
+        function updateBrowserURL(pageName) {
+            // Loại bỏ tiền tố 'dm-' và đuôi '.ejs' từ tên file
+            const cleanPageName = pageName.replace('dm-', '').replace('.ejs', '');
+            // Cập nhật URL mà không reload trang
+            window.history.pushState({}, '', '/' + cleanPageName);
+            // Cập nhật title trang
+            document.title = 'BCTK - ' + cleanPageName.charAt(0).toUpperCase() + cleanPageName.slice(1);
+        }
+
+        // Hàm load chung cho tất cả các trang
+        async function loadContent(url) {
+            const contentArea = document.getElementById('content-area');
+            
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar-area');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar) sidebar.classList.remove('is-open');
+                if (overlay) overlay.classList.remove('is-visible');
+                document.body.style.overflow = '';
+            }
+            
+            try {
+                // Hiển thị skeleton loading
+                contentArea.innerHTML = createSkeletonLoading();
+                showLoading();
+
+                // Thêm độ trễ tối thiểu để hiệu ứng loading mượt mà hơn
+                const minDelay = 500; // 500ms
+                const startTime = Date.now();
+
+                // Fetch dữ liệu
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const html = await response.text();
+
+                // Tính thời gian đã trôi qua
+                const elapsedTime = Date.now() - startTime;
+                
+                // Nếu load quá nhanh, đợi thêm một chút để hiệu ứng mượt mà hơn
+                if (elapsedTime < minDelay) {
+                    await new Promise(resolve => setTimeout(resolve, minDelay - elapsedTime));
+                }
+
+                // Hiệu ứng fade out nội dung cũ
+                contentArea.style.opacity = '0';
+                
+                // Đợi hiệu ứng fade out hoàn thành
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Cập nhật nội dung và fade in
+                contentArea.innerHTML = html;
+                contentArea.style.opacity = '1';
+
+                // Khởi tạo lại các script trong content mới được load
+                // Tìm và thực thi các script tag trong HTML vừa load
+                const scripts = contentArea.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+
+                // Đảm bảo các event listeners được khởi tạo lại sau khi content được load
+                // Đợi một chút để DOM hoàn toàn sẵn sàng
+                setTimeout(() => {
+                    // Trigger một custom event để các script trong content có thể lắng nghe
+                    const event = new CustomEvent('contentLoaded', { detail: { url } });
+                    contentArea.dispatchEvent(event);
+                }, 100);
+
+                // Cập nhật URL và title
+                const cleanUrl = url.replace('/views/dm-', '/').replace('.ejs', '');
+                window.history.pushState({}, '', cleanUrl);
+                document.title = 'BCTK - ' + cleanUrl.substring(1).charAt(0).toUpperCase() + cleanUrl.slice(2);
+
+            } catch (error) {
+                console.error('Lỗi khi tải nội dung:', error);
+                contentArea.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: red;">Có lỗi xảy ra khi tải nội dung</h2>
+                        <p>Vui lòng thử lại sau hoặc liên hệ quản trị viên.</p>
+                    </div>
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Xử lý sự kiện popstate khi người dùng nhấn nút back/forward của trình duyệt
+        window.addEventListener('popstate', function(event) {
+            const path = window.location.pathname;
+            if (path === '/') {
+                // Trang chủ
+                document.getElementById('content-area').innerHTML = '';
+                document.title = 'BCTK - Trang chủ';
+            } else {
+                // Load nội dung tương ứng
+                loadContent(path);
+            }
+        });
+
+        // Hàm xử lý khi click vào menu item
+        function handleMenuItemClick(menuItemElement, loadFunction) {
+            // Bỏ active tất cả các menu items
+            document.querySelectorAll('.submenu li').forEach(item => {
+                item.style.backgroundColor = ''; // Trả về màu mặc định
+                item.style.color = ''; // Trả về màu chữ mặc định
+            });
+
+            // Active menu item được click
+            menuItemElement.style.backgroundColor = '#1a75ff';
+            menuItemElement.style.color = 'white';
+
+            // Trên mobile: đóng drawer sau khi chọn
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar-area');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar) sidebar.classList.remove('is-open');
+                if (overlay) overlay.classList.remove('is-visible');
+                document.body.style.overflow = '';
+            }
+
+            // Gọi hàm load nội dung
+            loadFunction();
+        }
+
+        // Cập nhật HTML của menu items
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menu Hoạt động bệnh viện
+            const menuHDBV = document.querySelector('li[onclick="loadhoatdongbenhvien();"]');
+            if (menuHDBV) {
+                menuHDBV.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadhoatdongbenhvien);
+                };
+            }
+
+            // Menu Phòng khám
+            const menuPK = document.querySelector('li[onclick="loadBaoCaoPhongKham();"]');
+            if (menuPK) {
+                menuPK.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadBaoCaoPhongKham);
+                };
+            }
+
+            // Menu Điều trị nội trú
+            const menuDTNT = document.querySelector('li[onclick="loadBaoCaoDieuTriNoiTru();"]');
+            if (menuDTNT) {
+                menuDTNT.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadBaoCaoDieuTriNoiTru);
+                };
+            }
+
+            // Menu Cận lâm sàng
+            const menuCLS = document.querySelector('li[onclick="loadBaoCaoCLS();"]');
+            if (menuCLS) {
+                menuCLS.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadBaoCaoCLS);
+                };
+            }
+
+            // Menu Phẫu thuật thủ thuật
+            const menuPTTT = document.querySelector('li[onclick="loadBaoCaopttt();"]');
+            if (menuPTTT) {
+                menuPTTT.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadBaoCaopttt);
+                };
+            }
+
+            // Menu Chi phí theo khoa phòng
+            const menuCP = document.querySelector('li[onclick="loadBaoCaoChiPhiTheoKhoaPhong();"]');
+            if (menuCP) {
+                menuCP.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadBaoCaoChiPhiTheoKhoaPhong);
+                };
+            }
+
+            // Menu Công suất giường
+            const menuCSG = document.querySelector('li[onclick="loadBaoCaoCongSuatGiuong();"]');
+            if (menuCSG) {
+                menuCSG.onclick = function(e) {
+                    e.preventDefault();
+                    handleMenuItemClick(this, loadBaoCaoCongSuatGiuong);
+                };
+            }
+        });
+
+        // Cập nhật hàm xử lý tải trang ban đầu
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const loadHoatDongBenhVien = urlParams.get('loadHoatDongBenhVien');
+
+            if (loadHoatDongBenhVien === 'true') {
+                // Mở menu Thống kê
+                const menu = document.getElementById('menu2');
+                const parentLi = menu.parentElement;
+                const arrow = document.getElementById('arrow-menu2');
+
+                // Đóng tất cả các menu trước
+                closeAllMenus();
+
+                // Mở menu cha
+                menu.style.maxHeight = menu.scrollHeight + 'px';
+                parentLi.classList.add('active');
+                arrow.innerHTML = '▼';
+
+                // Active menu Hoạt động bệnh viện
+                const menuHDBV = document.querySelector('li[onclick="loadhoatdongbenhvien();"]');
+                if (menuHDBV) {
+                    handleMenuItemClick(menuHDBV, loadhoatdongbenhvien);
+                }
+            } else {
+                const path = window.location.pathname;
+                if (path !== '/') {
+                    loadContent(path);
+                }
+            }
+        });
+
+        // Cập nhật các hàm load
+        function loadNguoiSuDung() {
+            loadContent('/nguoisudung');
+        }
+
+        function loadNguoiSuDung_pq() {
+            loadContent('/nguoisudung-pq');
+        }
+
+        function loadhoatdongbenhvien() {
+            loadContent('/hoatdongbenhvien');
+        }
+
+        function loadBaoCaoPhongKham() {
+            loadContent('/baocaophongkham');
+        }
+
+        function loadBaoCaoDieuTriNoiTru() {
+            loadContent('/baocaodieutrinoitru');
+        }
+
+        function loadBaoCaoCLS() {
+            loadContent('/baocaocls');
+        }
+
+        function loadBaoCaopttt() {
+            loadContent('/baocaopttt');
+        }
+
+        function loadBaoCaoChiPhiTheoKhoaPhong() {
+            loadContent('/baocaothcpkhoaphong');
+        }
+
+        function loadBaoCaoCongSuatGiuong() {
+            loadContent('/baocaocongsuatgiuong');
+        }
+
+        function loadBaoCaoNgay() {
+            loadContent('/baocaongay');
+        }
+
+        function loadBaoCaoTuan() {
+            loadContent('/baocaotuan');
+        }
+
+        function loadDashBoardBSKham() {
+            loadContent('/dashboard-bskham');
+        }
+
+        function loadLienHe() {
+            loadContent('/lienhe');
+        }
+
+        /* function loadPdfToWord() {
+            loadContent('/pdftoword');
+        } */
+    </script>
+
+    <script src="/js/dm-nguoisudung.js"></script>
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>

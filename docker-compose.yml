@@ -1,0 +1,35 @@
+# BCTK-DHY — Express + EJS (Dockerfile multi-stage)
+#
+# Yêu cầu: file .env trong thư mục project (copy từ .env.example và điền giá trị).
+#
+# Chạy:
+#   docker compose up --build -d
+# Dừng:
+#   docker compose down
+#
+# Đổi cổng máy host (mặc định 3000): HOST_PORT=8080 docker compose up -d
+
+services:
+  app:
+    image: bctk-dhy:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${HOST_PORT:-3000}:3000'
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOST: '0.0.0.0'
+      PGUSER: ${PGUSER:-postgres}
+      PGHOST: ${PGHOST:-host.docker.internal}
+      PGDATABASE: ${PGDATABASE:-vimes_jsc}
+      PGPASSWORD: ${PGPASSWORD:-}
+      PGPORT: ${PGPORT:-5432}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./public/translations:/app/public/translations
+    restart: unless-stopped

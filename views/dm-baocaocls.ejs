@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THỐNG KÊ HOẠT ĐỘNG CẬN LÂM SÀNG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        html,
+        body {
+            height: auto;
+            overflow: visible;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Định dạng chung cho phần form chọn ngày */
+        #dateRangeForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Định dạng các ô input ngày và giờ */
+        /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+        #dateRangeForm label {
+            font-weight: bold;
+            color: #333;
+            /* Màu chữ đậm, xám than */
+        }
+
+        #startDateBCCanLamSang,
+        #endDateBCCanLamSang {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #1a73e8;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startTimeBCCanLamSang,
+        #endTimeBCCanLamSang {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #d20913bd;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startDateBCCanLamSang:focus,
+        #startTimeBCCanLamSang:focus,
+        #endDateBCCanLamSang:focus,
+        #endTimeBCCanLamSang:focus {
+            border-color: #1a73e8;
+            /* Bo viền xanh dương khi chọn */
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+        }
+
+        /* Style cho các ô date theo chuẩn Google */
+        #dateRangeForm input[type="date"],
+        #dateRangeForm input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Khi input được chọn, bo viền màu xanh */
+        #dateRangeForm input[type="date"]:focus,
+        #dateRangeForm input[type="text"]:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+        }
+
+        /* Điều chỉnh chiều rộng ngắn hơn cho startTimeBCCanLamSang và endTimeBCCanLamSang */
+        #startTimeBCCanLamSang,
+        #endTimeBCCanLamSang {
+            width: 80px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #startDateBCCanLamSang,
+        #endDateBCCanLamSang {
+            width: 130px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #zButtonBCCanLamSang {
+            font-size: 14px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #2e7d32;
+            /* Màu xanh đậm */
+            color: #e0f7fa;
+            /* Màu chữ sáng hơn */
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #zButtonBCCanLamSang:hover {
+            background-color: #074705;
+            /* Màu nền xanh đậm hơn khi rê chuột vào */
+            color: #e1ee2e;
+            /* Chữ màu trắng sáng khi rê chuột vào */
+        }
+
+        .table-panel {
+            width: 100%;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 0;
+        }
+
+        /* Style for the entire table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Header styling - keeping it as original */
+        table thead th {
+            background-color: #2e66e9;
+            color: white;
+            padding: 12px;
+            /* Original padding for headers */
+            text-align: center;
+            font-size: 14px;
+            /* Original font size for headers */
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Compact styling for table body cells */
+        table tbody td {
+            padding: 4px 6px;
+            /* Điều chỉnh giá trị này để tăng chiều cao */
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #D3D3D3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        /* Nếu muốn tăng độ cao cụ thể mà không phụ thuộc vào padding */
+        table tbody tr {
+            height: 26px;
+            /* Tăng chiều cao của mỗi hàng, điều chỉnh giá trị theo ý muốn */
+        }
+
+        /* Left-align for "Tên Phòng Khám" column */
+        .hrl_name {
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Right-align for currency columns */
+        .currency {
+            text-align: right;
+            font-size: 13px;
+        }
+
+        /* Định dạng các hàng để chia đều */
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #e6f7ff;
+        }
+
+        #table-body-cls-theo-khoa {
+            min-height: 300px;
+            /* Đặt chiều cao tối thiểu */
+            overflow-y: auto;
+            /* Thêm thanh cuộn dọc nếu nội dung quá dài */
+        }
+
+        .table-container {
+            max-height: 500px;
+            /* Giới hạn chiều cao */
+            overflow-y: scroll;
+            /* Thêm thanh cuộn dọc */
+        }
+
+        .total-row td {
+            font-weight: bold !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>THỐNG KÊ HOẠT ĐỘNG CẬN LÂM SÀNG</h1>
+
+    <form id="dateRangeForm">
+        <label for="startDateBCCanLamSang">Từ ngày: </label>
+        <input type="text" name="startDateBCCanLamSang" id="startDateBCCanLamSang" value="<%= startDateBCCLS %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="startTimeBCCanLamSang" name="startTimeBCCanLamSang" value="07:30"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <label for="endDateBCCanLamSang">Đến ngày: </label>
+        <input type="text" name="endDateBCCanLamSang" id="endDateBCCanLamSang" value="<%= endDateBCCLS %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="endTimeBCCanLamSang" name="endTimeBCCanLamSang" value="07:29"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <button type="button" id="zButtonBCCanLamSang">Lấy Báo Cáo</button>
+    </form>
+
+    <div>
+        <h2>THỐNG KÊ CẬN LÂM SÀNG</h2>
+
+        <div class="table-panel">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 5%;">STT</th>
+                        <th rowspan="2" style="width: 30%;">Dịch vụ kỹ thuật</th>
+                        <th rowspan="2" style="width: 15%;">Tổng Số</th>
+                        <th colspan="2" style="width: 25%;">Ngoại Trú</th>
+                        <th colspan="2" style="width: 25%;">Nội trú</th>
+                        <th colspan="5" style="width: 25%;">Chi Tiết Nội Soi</th>
+
+                    </tr>
+                    <tr>
+                        <th>BHYT</th>
+                        <th>Dịch vụ</th>
+
+                        <th>BHYT</th>
+                        <th>Dịch vụ</th>
+
+                        <th>NS TMH</th>
+                        <th>Tiêu Hóa</th>
+                        <th>Hô Hấp</th>
+                        <th>Tử Cung</th>
+                        <th>Khác</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body-cls">
+                    <!-- Nội dung bảng sẽ được chèn vào đây -->
+                </tbody>
+                <tbody id="table-body2-cls" class="total-row">
+                    <!-- Nội dung bảng sẽ được chèn vào đây -->
+                </tbody>
+            </table>
+        </div>
+
+        <h2>THỐNG KÊ THEO KHOA</h2>
+
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 3%;">STT</th>
+                        <th rowspan="2" style="width: 10%;">Khoa Phòng</th>
+                        <th rowspan="2" style="width: 5%;">Tổng Số</th>
+                        <th colspan="5" style="width: 20%;">Xét Nghiệm</th>
+                        <th colspan="5" style="width: 20%;">Chẩn Đoán Hình Ảnh</th>
+                        <th colspan="5" style="width: 20%;">Nội Soi</th>
+                        <th colspan="3" style="width: 10%;">Thăm Dò Chức Năng</th>
+
+                    </tr>
+                    <tr>
+                        <th>HH</th>
+                        <th>SH</th>
+                        <th>NT</th>
+                        <th>VS</th>
+                        <th>Khác</th>
+
+                        <th>XQ</th>
+                        <th>CT</th>
+                        <th>MRI</th>
+                        <th>SA</th>
+                        <th>Khác</th>
+
+                        <th>TMH</th>
+                        <th>TH</th>
+                        <th>HH</th>
+                        <th>TC</th>
+                        <th>Khác</th>
+
+                        <th>ĐT</th>
+                        <th>CNHH</th>
+                        <th>Khác</th>
+                    </tr>
+                </thead>
+                <tbody id="table-cls-theo-khoa">
+                    <!-- Nội dung bảng sẽ được chèn vào đây -->
+                </tbody>
+                <tbody id="table2-cls-theo-khoa" class="total-row">
+                    <!-- Nội dung bảng sẽ được chèn vào đây -->
+                </tbody>
+            </table>
+        </div>
+       
+    </div>
+
+
+
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>

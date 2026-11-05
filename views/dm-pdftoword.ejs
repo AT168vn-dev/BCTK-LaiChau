@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển đổi PDF/Ảnh sang Word</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff;
+            font-weight: bold;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        .upload-area:hover {
+            border-color: #0056b3;
+            background-color: #e9ecef;
+        }
+
+        .upload-area.dragover {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #666;
+        }
+
+        #fileInput {
+            display: none;
+            position: absolute;
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-convert {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-convert:hover {
+            background-color: #218838;
+        }
+
+        .btn-convert:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-container.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #d4edda;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .result-message {
+            color: #155724;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .btn-download {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            color: #721c24;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .supported-formats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+        }
+
+        .supported-formats h3 {
+            margin-top: 0;
+            color: #856404;
+            font-size: 16px;
+        }
+
+        .supported-formats ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: #856404;
+        }
+
+        .supported-formats li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2><i class="fas fa-file-word"></i> Chuyển đổi PDF/Ảnh sang Word (DOCX)</h2>
+
+        <div class="supported-formats">
+            <h3><i class="fas fa-info-circle"></i> Định dạng hỗ trợ:</h3>
+            <ul>
+                <li>File PDF (.pdf)</li>
+                <li>Hình ảnh: JPG, PNG, GIF, BMP, TIFF (.jpg, .jpeg, .png, .gif, .bmp, .tiff)</li>
+            </ul>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-text">Kéo thả file vào đây hoặc click để chọn file</div>
+            <div class="upload-hint">Hỗ trợ PDF và các định dạng ảnh</div>
+            <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+
+        <button class="btn-convert" id="btnConvert" disabled>
+            <i class="fas fa-sync-alt"></i> Chuyển đổi sang Word
+        </button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <div class="progress-text" id="progressText">Đang xử lý...</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="result-message">
+                <i class="fas fa-check-circle"></i> Chuyển đổi thành công!
+            </div>
+            <a href="#" id="downloadLink" class="btn-download" download>
+                <i class="fas fa-download"></i> Tải file Word
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Khởi tạo chức năng PDF to Word
+        function initPdfToWord() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const btnConvert = document.getElementById('btnConvert');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const resultContainer = document.getElementById('resultContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const downloadLink = document.getElementById('downloadLink');
+
+            if (!uploadArea || !fileInput) {
+                console.error('Không tìm thấy các phần tử cần thiết');
+                return;
+            }
+
+            let selectedFile = null;
+
+            // Click vào upload area - sử dụng event delegation
+            uploadArea.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (fileInput) {
+                    fileInput.click();
+                }
+            }, true);
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.add('dragover');
+            }, true);
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('dragover');
+            }, true);
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            }, true);
+
+            // Chọn file từ input
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+
+            // Xử lý file được chọn
+            function handleFileSelect(file) {
+            // Kiểm tra định dạng file
+            const validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validExtensions.includes(fileExtension)) {
+                showError('Định dạng file không được hỗ trợ. Vui lòng chọn file PDF hoặc ảnh.');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.add('show');
+            btnConvert.disabled = false;
+            resultContainer.classList.remove('show');
+            errorMessage.classList.remove('show');
+        }
+
+            // Định dạng kích thước file
+            function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+            // Hiển thị lỗi
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add('show');
+                resultContainer.classList.remove('show');
+            }
+
+            // Ẩn lỗi
+            function hideError() {
+                errorMessage.classList.remove('show');
+            }
+
+            // Xử lý chuyển đổi
+            btnConvert.addEventListener('click', async () => {
+            if (!selectedFile) {
+                showError('Vui lòng chọn file trước khi chuyển đổi.');
+                return;
+            }
+
+            // Ẩn kết quả và lỗi cũ
+            resultContainer.classList.remove('show');
+            hideError();
+
+            // Hiển thị progress
+            progressContainer.classList.add('show');
+            btnConvert.disabled = true;
+            progressFill.style.width = '10%';
+            progressText.textContent = 'Đang tải file lên server...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                // Simulate progress
+                const progressInterval = setInterval(() => {
+                    const currentWidth = parseInt(progressFill.style.width);
+                    if (currentWidth < 90) {
+                        progressFill.style.width = (currentWidth + 10) + '%';
+                    }
+                }, 500);
+
+                const response = await fetch('/api/convert-pdf-to-word', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Hoàn thành!';
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Có lỗi xảy ra khi chuyển đổi file.');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = selectedFile.name.replace(/\.[^/.]+$/, '') + '.docx';
+
+                // Hiển thị kết quả
+                progressContainer.classList.remove('show');
+                resultContainer.classList.add('show');
+                btnConvert.disabled = false;
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Có lỗi xảy ra khi chuyển đổi file. Vui lòng thử lại.');
+                progressContainer.classList.remove('show');
+                btnConvert.disabled = false;
+            }
+            });
+        }
+
+        // Khởi tạo ngay khi script được load (vì content đã được chèn vào DOM)
+        // Sử dụng setTimeout để đảm bảo DOM đã được render hoàn toàn
+        (function() {
+            function tryInit() {
+                const uploadArea = document.getElementById('uploadArea');
+                if (uploadArea) {
+                    initPdfToWord();
+                    return true;
+                }
+                return false;
+            }
+            
+            // Thử khởi tạo ngay
+            if (!tryInit()) {
+                // Nếu chưa có element, thử lại sau
+                setTimeout(tryInit, 100);
+            }
+            
+            // Lắng nghe event contentLoaded từ content-area (khi load qua AJAX)
+            // Tìm content-area từ document (có thể là parent hoặc ancestor)
+            setTimeout(function() {
+                const contentArea = document.getElementById('content-area');
+                if (contentArea) {
+                    contentArea.addEventListener('contentLoaded', function() {
+                        setTimeout(tryInit, 100);
+                    });
+                }
+            }, 200);
+        })();
+    </script>
+</body>
+
+</html>
+

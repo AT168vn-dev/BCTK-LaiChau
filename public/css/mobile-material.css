@@ -1,0 +1,664 @@
+/* Mobile Material Design CSS - Google Material Design 3 */
+/* Sử dụng cho các view khi isMobile = true */
+
+/* Material Design Colors */
+:root {
+    --md-primary: #1a73e8;
+    --md-primary-dark: #1557b0;
+    --md-primary-light: #4285f4;
+    --md-surface: #ffffff;
+    --md-surface-variant: #f8f9fa;
+    --md-on-surface: #202124;
+    --md-on-surface-variant: #5f6368;
+    --md-outline: #dadce0;
+    --md-error: #d93025;
+    --md-success: #34a853;
+    --md-warning: #fbbc04;
+    --md-shadow: rgba(0, 0, 0, 0.12);
+    --md-shadow-elevated: rgba(0, 0, 0, 0.2);
+}
+
+/* Typography */
+body.mobile-view {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--md-on-surface);
+}
+
+/* Material Design Buttons */
+.mobile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+    text-transform: none;
+    letter-spacing: 0.25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px var(--md-shadow);
+    background-color: var(--md-primary);
+    color: white;
+}
+
+.mobile-btn:hover {
+    background-color: var(--md-primary-dark);
+    box-shadow: 0 4px 8px var(--md-shadow-elevated);
+}
+
+.mobile-btn:active {
+    background-color: var(--md-primary-dark);
+    box-shadow: 0 1px 2px var(--md-shadow);
+}
+
+.mobile-btn-outlined {
+    background-color: transparent;
+    border: 1px solid var(--md-outline);
+    color: var(--md-primary);
+    box-shadow: none;
+}
+
+.mobile-btn-outlined:hover {
+    background-color: rgba(26, 115, 232, 0.08);
+    box-shadow: none;
+}
+
+/* Material Design Input Fields */
+.mobile-input {
+    width: 100%;
+    min-height: 56px;
+    padding: 16px;
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid var(--md-outline);
+    border-radius: 8px;
+    background-color: var(--md-surface);
+    color: var(--md-on-surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.mobile-input:focus {
+    outline: none;
+    border-color: var(--md-primary);
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.mobile-input::placeholder {
+    color: var(--md-on-surface-variant);
+}
+
+/* Material Design Cards */
+.mobile-card {
+    background-color: var(--md-surface);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px var(--md-shadow), 0 1px 2px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s;
+}
+
+.mobile-card:hover {
+    box-shadow: 0 4px 16px var(--md-shadow-elevated), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-card-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    margin-bottom: 16px;
+}
+
+.mobile-card-content {
+    color: var(--md-on-surface-variant);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Material Design Tables */
+.mobile-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px var(--md-shadow);
+}
+
+.mobile-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--md-surface);
+}
+
+.mobile-table th {
+    background-color: var(--md-surface-variant);
+    color: var(--md-on-surface);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--md-outline);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mobile-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--md-outline);
+    font-size: 14px;
+    color: var(--md-on-surface);
+}
+
+.mobile-table tr:last-child td {
+    border-bottom: none;
+}
+
+.mobile-table tr:hover {
+    background-color: var(--md-surface-variant);
+}
+
+/* Material Design Chips */
+.mobile-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: 16px;
+    background-color: var(--md-surface-variant);
+    color: var(--md-on-surface);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.mobile-chip:hover {
+    background-color: var(--md-outline);
+}
+
+/* Material Design Snackbar/Toast */
+.mobile-snackbar {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #323232;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+    z-index: 10000;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Material Design Loading Spinner */
+.mobile-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--md-outline);
+    border-top-color: var(--md-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Material Design Divider */
+.mobile-divider {
+    height: 1px;
+    background-color: var(--md-outline);
+    margin: 16px 0;
+}
+
+/* Responsive Utilities */
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+    
+    /* Responsive tables */
+    .mobile-table-container {
+        display: block;
+        width: 100%;
+    }
+    
+    .mobile-table {
+        display: block;
+        width: 100%;
+    }
+    
+    .mobile-table thead {
+        display: none;
+    }
+    
+    .mobile-table tbody {
+        display: block;
+    }
+    
+    .mobile-table tr {
+        display: block;
+        margin-bottom: 16px;
+        border: 1px solid var(--md-outline);
+        border-radius: 8px;
+        padding: 12px;
+        background-color: var(--md-surface);
+    }
+    
+    .mobile-table td {
+        display: block;
+        text-align: right;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--md-surface-variant);
+    }
+    
+    .mobile-table td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 500;
+        color: var(--md-on-surface-variant);
+    }
+    
+    .mobile-table td:last-child {
+        border-bottom: none;
+    }
+}
+
+/* Material Design Elevation */
+.mobile-elevation-1 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.mobile-elevation-2 {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+}
+
+.mobile-elevation-3 {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.24);
+}
+
+/* Material Design Ripple Effect */
+.mobile-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.mobile-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.mobile-ripple:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* ========== Nội dung trong #content-area (các page load động) - Mobile ========== */
+@media (max-width: 768px) {
+    #content-area {
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    #content-area .main-container {
+        flex-direction: column;
+        gap: 16px;
+        padding: 0;
+    }
+
+    #content-area .table-container,
+    #content-area .form-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #content-area .form-container {
+        order: 2;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px var(--md-shadow);
+        border: 1px solid var(--md-outline);
+    }
+
+    #content-area .table-container {
+        order: 1;
+    }
+
+    #content-area form {
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    #content-area label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--md-on-surface-variant);
+        margin-bottom: 4px;
+        margin-top: 12px;
+    }
+
+    #content-area label:first-of-type {
+        margin-top: 0;
+    }
+
+    #content-area input,
+    #content-area select {
+        width: 100% !important;
+        min-height: 48px;
+        padding: 12px 16px;
+        font-size: 16px;
+        border: 1px solid var(--md-outline);
+        border-radius: 8px;
+        background-color: var(--md-surface);
+        color: var(--md-on-surface);
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        opacity: 1;
+    }
+
+    #content-area input:focus,
+    #content-area select:focus {
+        outline: none;
+        border-color: var(--md-primary);
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
+    #content-area input::placeholder {
+        color: var(--md-on-surface-variant);
+    }
+
+    #content-area button.general-button,
+    #content-area .combobox-container button,
+    #content-area form button {
+        min-height: 48px;
+        min-width: 48px;
+        padding: 12px 16px;
+        font-size: 14px;
+        border-radius: 8px;
+        margin: 4px;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    #content-area .combobox-container {
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    #content-area .combobox-container > div {
+        flex: 1 1 100%;
+    }
+
+    #content-area .search-container input {
+        width: 100% !important;
+        max-width: 100%;
+        min-height: 48px;
+    }
+
+    #content-area .search-container {
+        margin-bottom: 12px;
+    }
+
+    /* ----- Bảng: áp dụng cho MỌI table trong #content-area (bảng 1, 2, 3...) ----- */
+    /* Khung chứa table: không vượt khung hình, cuộn ngang bên trong */
+    #content-area .table-panel,
+    #content-area .table-wrapper {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid var(--md-outline);
+        box-shadow: 0 1px 3px var(--md-shadow);
+        max-height: none;
+    }
+
+    /* Div trực tiếp chứa table (vd. Thống kê theo khoa) — không vượt khung, cuộn ngang */
+    #content-area div:has(> table) {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid var(--md-outline);
+        box-shadow: 0 1px 3px var(--md-shadow);
+        margin-bottom: 12px;
+    }
+
+    /* Ghi đè style nội trang (table width: 100%) để bảng không “nhảy” ra khung — cuộn trong wrapper */
+    #content-area table {
+        width: max-content !important;
+        min-width: 100% !important;
+        table-layout: auto !important;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    #content-area table col {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    #content-area thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--md-primary) !important;
+        color: white !important;
+        padding: 10px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+        border: 1px solid var(--md-outline);
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    #content-area tbody td {
+        padding: 10px 8px;
+        border: 1px solid var(--md-outline);
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    /* Chỉ cột 1 (STT, index 0) cố định 2rem */
+    #content-area table thead tr:first-child th:nth-child(1),
+    #content-area table td:nth-child(1) {
+        width: 2rem !important;
+        max-width: 2rem !important;
+        min-width: 2rem !important;
+        box-sizing: border-box !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+
+    /* Cột 2 trở đi (index 1 = tên khoa phòng, index 2+ ...): độ rộng theo nội dung */
+    #content-area table thead tr:first-child th:nth-child(n+2),
+    #content-area table td:nth-child(n+2) {
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    #content-area tbody tr:nth-child(even) {
+        background-color: var(--md-surface-variant);
+    }
+
+    #content-area tbody tr:active {
+        background-color: rgba(26, 115, 232, 0.08);
+    }
+
+    /* ----- Mobile: Nhiều bảng đang xếp ngang → chuyển xuống dòng (desktop giữ nguyên) ----- */
+    #content-area .table-panel {
+        display: flex !important;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+    }
+
+    #content-area .table-panel > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+    }
+
+    /* Cột flex (flex-item, flex-item2) chiếm full width và xuống dòng */
+    #content-area .flex-item,
+    #content-area .flex-item2 {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    /* Trong .flex-item có nhiều .table-wrapper cạnh nhau thì cũng xếp dọc */
+    #content-area .flex-item {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #content-area .flex-item > * {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Flex container (nếu dùng) cũng xếp dọc */
+    #content-area .flex-container {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #content-area .flex-container > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+    }
+
+    #content-area #dateRangeForm {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+
+    #content-area #dateRangeForm label {
+        width: 100%;
+        margin: 0 0 4px 0;
+        font-size: 12px;
+    }
+
+    #content-area #startDate,
+    #content-area #endDate,
+    #content-area #startTime,
+    #content-area #endTime {
+        min-height: 48px;
+        padding: 12px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #content-area .dashboard {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 0;
+    }
+
+    #content-area .dashboard .card {
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px var(--md-shadow);
+    }
+
+    #content-area .dashboard .card h2 {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    #content-area .dashboard .card label,
+    #content-area .dashboard .card p label {
+        font-size: 28px !important;
+    }
+
+    #content-area h1 {
+        font-size: 20px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    #content-area h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+    }
+
+    #content-area .dialog,
+    #content-area .confirmDeleteModal .dialog {
+        width: calc(100vw - 32px);
+        max-width: 400px;
+        margin: 16px;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    #content-area .dialog button {
+        min-height: 48px;
+        padding: 12px 24px;
+        margin: 4px;
+    }
+
+    /* Footer / trang Liên hệ */
+    #content-area .main-container > footer {
+        padding: 16px;
+        margin-top: 12px;
+        border-radius: 12px;
+    }
+
+    #content-area .main-container > footer div[style*="display: flex"] {
+        flex-direction: column;
+        gap: 16px;
+    }
+}

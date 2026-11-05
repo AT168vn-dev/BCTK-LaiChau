@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THỐNG KÊ PHÒNG KHÁM</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Định dạng chung cho phần form chọn ngày */
+        #dateRangeForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Định dạng các ô input ngày và giờ */
+        /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+        #dateRangeForm label {
+            font-weight: bold;
+            color: #333;
+            /* Màu chữ đậm, xám than */
+        }
+
+        #startDateBCPhongKham,
+        #endDateBCPhongKham {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #1a73e8;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startTimeBCPhongKham,
+        #endTimeBCPhongKham {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #d20913bd;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startDateBCPhongKham:focus,
+        #startTimeBCPhongKham:focus,
+        #endDateBCPhongKham:focus,
+        #endTimeBCPhongKham:focus {
+            border-color: #1a73e8;
+            /* Bo viền xanh dương khi chọn */
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+        }
+
+        /* Style cho các ô date theo chuẩn Google */
+        #dateRangeForm input[type="date"],
+        #dateRangeForm input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Khi input được chọn, bo viền màu xanh */
+        #dateRangeForm input[type="date"]:focus,
+        #dateRangeForm input[type="text"]:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+        }
+
+        /* Điều chỉnh chiều rộng ngắn hơn cho startTimeBCPhongKham và endTimeBCPhongKham */
+        #startTimeBCPhongKham,
+        #endTimeBCPhongKham {
+            width: 80px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #startDateBCPhongKham,
+        #endDateBCPhongKham {
+            width: 130px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #zButtonBCPhongKham {
+            font-size: 14px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #2e7d32;
+            /* Màu xanh đậm */
+            color: #e0f7fa;
+            /* Màu chữ sáng hơn */
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #zButtonBCPhongKham:hover {
+            background-color: #074705;
+            /* Màu nền xanh đậm hơn khi rê chuột vào */
+            color: #e1ee2e;
+            /* Chữ màu trắng sáng khi rê chuột vào */
+        }
+
+        /* Style for the entire table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #D3D3D3;
+            table-layout: fixed;
+            /* Thêm thuộc tính này để cố định độ rộng cột */
+        }
+
+        /* Header styling - keeping it as original */
+        table thead th {
+            background-color: #2e66e9;
+            color: white;
+            padding: 8px 4px;
+            /* Giảm padding để tiết kiệm không gian */
+            text-align: center;
+            font-size: 11px;
+            /* Giảm font size một chút */
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Compact styling for table body cells */
+        table tbody td {
+            padding: 4px;
+            font-size: 11px;
+            /* Giảm font size một chút */
+            text-align: center;
+            border: 1px solid #D3D3D3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        /* Nếu muốn tăng độ cao cụ thể mà không phụ thuộc vào padding */
+        table tbody tr {
+            height: 26px;
+            /* Tăng chiều cao của mỗi hàng, điều chỉnh giá trị theo ý muốn */
+        }
+
+        table tbody tr:hover {
+            background-color: #e6f7ff;
+        }
+
+        /* Định dạng các hàng để chia đều */
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .table-panel {
+            display: flex;
+            width: 100%;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 2px;
+            gap: 8px;
+        }
+
+        /* Đặt bố cục Flexbox để 2 bảng nằm ngang */
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 2px;
+            padding: 1px;
+        }
+
+        /* Định dạng từng bảng */
+        .flex-item {
+            flex: 0 0 75%;
+            /* Không co giãn, chiếm 75% chiều rộng */
+            background-color: #fff;
+            padding: 1px;
+            border-radius: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .flex-item2 {
+            flex: 0 0 24%;
+            /* Không co giãn, chiếm 24% chiều rộng */
+            background-color: #fff;
+            padding: 1px;
+            border-radius: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tiêu đề của mỗi bảng */
+        .flex-item h2,
+        .flex-item2 h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* Bố cục bảng */
+        .table-wrapper {
+            width: 100%;
+        }
+
+        .hrl_name {
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .total-row td {
+            font-weight: bold !important;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>THỐNG KÊ THEO PHÒNG KHÁM</h1>
+
+    <form id="dateRangeForm">
+        <label for="startDateBCPhongKham">Từ ngày: </label>
+        <input type="text" name="startDateBCPhongKham" id="startDateBCPhongKham" value="<%= startDateBCPhongKham %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="startTimeBCPhongKham" name="startTimeBCPhongKham" value="07:30"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <label for="endDateBCPhongKham">Đến ngày: </label>
+        <input type="text" name="endDateBCPhongKham" id="endDateBCPhongKham" value="<%= endDateBCPhongKham %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="endTimeBCPhongKham" name="endTimeBCPhongKham" value="07:29"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <button type="button" id="zButtonBCPhongKham">Lấy Báo Cáo</button>
+    </form>
+
+    <h2>THỐNG KÊ CHI TIẾT PHÒNG KHÁM</h2>
+    <div class="table-panel">
+        <div class="flex-item">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 3%;">STT</th>
+                            <th rowspan="2" style="width: 20%;">Tên Phòng Khám</th>
+                            <th colspan="4" style="width: 25%;">THỐNG KÊ KHÁM</th>
+                            <th colspan="2" style="width: 10%;">BN < 15 tuổi</th>
+                            <th colspan="2" style="width: 10%;">BN > 60 tuổi</th>
+                            <th rowspan="2" style="width: 5%;">Nhập<br />Viện</th>
+                            <th rowspan="2" style="width: 5%;">Chuyển<br />Viện</th>
+                            <th rowspan="2" style="width: 6%;">ĐT<br />Ngoại Trú</th>
+                        </tr>
+                        <tr>
+                            <th>Tổng Số</th>
+                            <th>BHYT</th>
+                            <th>Dịch Vụ</th>
+                            <th>Cấp Cứu</th>
+
+                            <th>Nam</th>
+                            <th>Nữ</th>
+
+                            <th>Nam</th>
+                            <th>Nữ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-chitietphongkham">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                    <tbody id="table-body2-chitietphongkham" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex-item2">
+            <div class="table-wrapper">
+                <table>
+                    <colgroup>
+                    <col style="width: 13%;">
+                    <col style="width: 55%;">
+                    <col style="width: 16%;">
+                    <col style="width: 16%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th colspan="4">LƯỢT KHÁM</th>
+                        </tr>
+                        <tr>
+                            <th>STT</th>
+                            <th>Bác Sĩ</th>
+                            <th>Tổng</th>
+                            <th>BH</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-bacsikham">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                    <tbody id="table-body2-bacsikham" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>

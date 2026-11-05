@@ -1,0 +1,8 @@
+/* Phần chữ chạy header (desktop: marquee từ phải qua trái) */
+.header-marquee {
+    flex-grow: 1;
+    margin-top: 5px;
+    margin-left: 0; /* Đẩy sát viền trái */
+    margin-right: 20px;
+    width: 100%; /* Chạy toàn bộ chiều ngang */
+}

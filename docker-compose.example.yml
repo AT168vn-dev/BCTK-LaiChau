@@ -1,0 +1,17 @@
+# (Tuỳ chọn) Bản rút gọn — dùng docker-compose.yml trong repo là đủ.
+# Sao chép thành docker-compose.yml hoặc: docker compose -f docker-compose.example.yml up --build
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    volumes:
+      - ./uploads:/app/uploads
+      - ./public/translations:/app/public/translations

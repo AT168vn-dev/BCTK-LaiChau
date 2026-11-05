@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/iconWS.png" type="image/png">
+    <title>Thống Kê Bệnh Viện</title>    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --marquee-duration: 20s;
+            --clinic-blue: #007BFF;
+            --clinic-green: #4CAF50;
+            --clinic-green-hover: #43A047;
+            --text-dark: #1b1d22;
+            --text-muted: #5d6470;
+        }
+
+        * { box-sizing: border-box; }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            height: 100%;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'Roboto', system-ui, sans-serif;
+            color: #212529;
+            -webkit-font-smoothing: antialiased;
+            background:
+                linear-gradient(135deg, rgba(224, 247, 250, 0.92) 0%, transparent 42%),
+                linear-gradient(225deg, rgba(207, 237, 240, 0.85) 0%, transparent 42%),
+                linear-gradient(180deg, #ffffff 0%, #f0fafc 100%);
+            background-attachment: fixed;
+        }
+
+        /* Matrix rain — theo EhealthClinicManager */
+        .matrix-wrap {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            perspective: 1200px;
+        }
+
+        .matrix-grid {
+            position: absolute;
+            inset: 0;
+            opacity: 0.06;
+            background-image:
+                linear-gradient(rgba(0, 180, 150, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 180, 150, 0.4) 1px, transparent 1px);
+            background-size: 4vmin 4vmin;
+            transform: rotateX(60deg) scale(2) translateY(-10%);
+            transform-style: preserve-3d;
+        }
+
+        .matrix-far {
+            position: absolute;
+            inset: 0;
+            transform: rotateX(55deg) translateZ(-200px);
+            transform-style: preserve-3d;
+        }
+
+        .matrix-near {
+            position: absolute;
+            inset: 0;
+            transform: rotateX(55deg) translateZ(0);
+            transform-style: preserve-3d;
+        }
+
+        .matrix-col {
+            position: absolute;
+            top: 0;
+            border-radius: 999px;
+        }
+
+        .matrix-col--far {
+            width: 2px;
+            height: 90px;
+            left: calc(var(--l, 0) * 1%);
+            background: linear-gradient(180deg, rgba(0, 255, 160, 0.85) 0%, rgba(0, 200, 140, 0.3) 40%, transparent 100%);
+            box-shadow: 0 0 8px 1px rgba(0, 255, 180, 0.4);
+            animation-name: matrix-rain-far;
+            animation-duration: calc(var(--d, 7) * 1s);
+            animation-delay: calc(var(--del, 0) * 1s);
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        .matrix-col--near {
+            width: 3px;
+            left: calc(var(--l, 0) * 1%);
+            height: calc(var(--h, 100) * 1px);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(0, 255, 200, 0.9) 15%, rgba(0, 220, 160, 0.5) 45%, transparent 100%);
+            box-shadow: 0 0 12px 2px rgba(0, 255, 200, 0.5), 0 0 24px 4px rgba(0, 180, 140, 0.25);
+            animation-name: matrix-rain;
+            animation-duration: calc(var(--dur, 5.5) * 1s);
+            animation-delay: calc(var(--del, 0) * 1s);
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes matrix-rain {
+            0% { transform: translate3d(0, 0, 0); opacity: 0; }
+            2% { opacity: 0.95; }
+            88% { opacity: 0.75; }
+            100% { transform: translate3d(0, 120vh, 0); opacity: 0; }
+        }
+
+        @keyframes matrix-rain-far {
+            0% { transform: translate3d(0, 0, 0) scale(0.7); opacity: 0; }
+            3% { opacity: 0.45; }
+            92% { opacity: 0.28; }
+            100% { transform: translate3d(0, 120vh, 0) scale(0.7); opacity: 0; }
+        }
+
+        @keyframes marquee-scroll-up {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(0, -50%, 0); }
+        }
+
+        .login-layout-outer {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            width: 100%;
+            height: 100dvh;
+            max-height: 100dvh;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .login-root {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+            max-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            overflow: hidden;
+        }
+
+        .login-card-shell {
+            width: 100%;
+            max-width: 1180px;
+            max-height: min(100%, calc(100dvh - 16px));
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .login-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: minmax(0, 1fr);
+            flex: 1;
+            min-height: 0;
+            max-height: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .login-grid {
+                grid-template-columns: 1.2fr 0.85fr;
+                grid-template-rows: minmax(0, 1fr);
+            }
+        }
+
+        /* Cột trái — giống Clinic Manager + marquee bài viết */
+        .login-brand {
+            display: none;
+            flex-direction: column;
+            min-height: 0;
+            padding: 16px 20px 18px;
+            background: linear-gradient(to bottom right, #ffffff, #f6fbff 45%, #eef8ff);
+            border-right: 1px solid #f1f5f9;
+            overflow: hidden;
+        }
+
+        @media (min-width: 1024px) {
+            .login-brand {
+                display: flex;
+            }
+        }
+
+        .brand-logo {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .brand-logo img {
+            flex-shrink: 0;
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .brand-title-container {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .brand-title {
+            font-family: Tahoma, 'Segoe UI', sans-serif;
+            font-size: clamp(2.35rem, 2.2vw, 2.65rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-dark);
+            margin: 0 0 6px 0;
+            line-height: 1.2;
+        }
+
+        .brand-unit {
+            font-size: clamp(0.875rem, 2.2vw, 1rem);
+            color: var(--text-muted);
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.35;
+        }
+
+        .brand-lead {
+            font-size: clamp(1.1rem, 1.8vw, 1.65rem);
+            font-weight: 600;
+            line-height: 1.35;
+            color: #1f2430;
+            margin: 0 0 12px 0;
+        }
+
+        .brand-lead span {
+            color: var(--clinic-blue);
+        }
+
+        .brand-desc {
+            font-size: 0.875rem;
+            color: #69707c;
+            line-height: 1.6;
+            max-width: 520px;
+            margin: 0 0 20px 0;
+        }
+
+        .marquee-card {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            margin-top: 0;
+            border-radius: 12px;
+            background: linear-gradient(to right, #e9f5ff, #d8ecff);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .marquee-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.35;
+            pointer-events: none;
+            background: radial-gradient(circle at 20% 30%, #7ad5ff 0%, transparent 45%),
+                radial-gradient(circle at 80% 20%, #6a7dff 0%, transparent 40%),
+                radial-gradient(circle at 70% 90%, #4de0b8 0%, transparent 35%);
+        }
+
+        .marquee-card-label {
+            position: relative;
+            z-index: 1;
+            padding: 8px 12px 0;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #133a5a;
+            flex-shrink: 0;
+        }
+
+        .marquee-viewport {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            margin: 6px 10px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(19, 58, 90, 0.08);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
+        }
+
+        .marquee-track {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            width: 100%;
+            animation: marquee-scroll-up var(--marquee-duration) linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        .marquee-content {
+            flex: 0 0 auto;
+            box-sizing: border-box;
+            color: #334155;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            padding: 10px 10px 8px;
+        }
+
+        .marquee-content p { margin: 0 0 8px 0; }
+        .marquee-content ul { margin: 0 0 8px 0; padding-left: 1.1em; }
+        .marquee-content ul ul { margin: 4px 0 4px 0; padding-left: 1.15em; list-style-type: disc; }
+        .marquee-content li { margin-bottom: 4px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .marquee-track { animation: none !important; }
+            .marquee-viewport {
+                overflow-y: auto;
+                mask-image: none;
+                -webkit-mask-image: none;
+            }
+        }
+
+        /* Cột phải — form giống Clinic Manager */
+        .login-form-col {
+            padding: 18px 20px 20px;
+            background: rgba(255, 255, 255, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        @media (min-width: 1024px) {
+            .login-form-col {
+                padding: 22px 28px;
+            }
+        }
+
+        .login-form-inner {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .login-form-inner h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #212529;
+            margin: 0 0 8px 0;
+        }
+
+        .login-hint {
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            color: #6b7280;
+            margin: 0 0 22px 0;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 9px 11px;
+            margin: 0 0 10px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .login-container input:focus {
+            outline: none;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.25);
+        }
+
+        /* Giống nút Đăng nhập EhealthClinicManager: gradient indigo → xanh đậm */
+        .login-container button[type="submit"] {
+            width: 100%;
+            padding: 9px 14px;
+            margin-top: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(to right, #1a237e, #0d47a1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease, filter 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-container button[type="submit"]:hover {
+            background: linear-gradient(to right, #252f9e, #1565c0);
+        }
+
+        .login-container button[type="submit"]:active {
+            filter: brightness(0.95);
+        }
+
+        .error-message {
+            color: #b91c1c;
+            font-size: 0.8125rem;
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+
+        .qr-container {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .qr-container h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0 0 12px 0;
+            color: #0f172a;
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+
+        .qr-code-wrapper {
+            margin: 8px 0;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-code-wrapper img {
+            max-width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px;
+            background: #fff;
+        }
+
+        .qr-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-status.pending { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .qr-status.confirmed { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .qr-status.expired { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        .qr-loading {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #2196F3;
+            border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1023px) {
+            .login-form-col {
+                padding: 24px 18px 28px;
+            }
+
+            .login-container input {
+                min-height: 48px;
+                padding: 14px 16px;
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .login-container button[type="submit"] {
+                min-height: 48px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-spinner" style="display:none;">
+        <img src="/images/loading.gif" alt="Loading...">
+    </div>
+
+    <div class="matrix-wrap" aria-hidden="true">
+        <div class="matrix-grid"></div>
+        <div class="matrix-far">
+            <% [5, 12, 19, 26, 33, 41, 48, 55, 62, 70, 77, 84, 91].forEach(function(leftPct, i) { %>
+            <div class="matrix-col matrix-col--far" style="--l: <%= leftPct %>; --d: <%= 7 + (i % 3) %>; --del: <%= i * 0.4 %>;"></div>
+            <% }); %>
+        </div>
+        <div class="matrix-near">
+            <% var nearCols = [
+                { left: 8, delay: '0s', duration: '5.5s', h: 100 },
+                { left: 15, delay: '0.8s', duration: '6s', h: 85 },
+                { left: 22, delay: '0.2s', duration: '5.2s', h: 110 },
+                { left: 29, delay: '1.2s', duration: '5.8s', h: 90 },
+                { left: 36, delay: '0.5s', duration: '6.2s', h: 95 },
+                { left: 43, delay: '1.8s', duration: '5.4s', h: 88 },
+                { left: 50, delay: '0.3s', duration: '5.9s', h: 105 },
+                { left: 57, delay: '1s', duration: '5.6s', h: 92 },
+                { left: 64, delay: '0.6s', duration: '6.1s', h: 98 },
+                { left: 71, delay: '1.4s', duration: '5.3s', h: 86 },
+                { left: 78, delay: '0.4s', duration: '5.7s', h: 102 },
+                { left: 85, delay: '1.6s', duration: '6s', h: 94 },
+                { left: 92, delay: '0.9s', duration: '5.5s', h: 108 }
+            ]; nearCols.forEach(function(col) { %>
+            <div class="matrix-col matrix-col--near" style="--l: <%= col.left %>; --h: <%= col.h %>; --dur: <%= parseFloat(col.duration) %>; --del: <%= parseFloat(col.delay) %>;"></div>
+            <% }); %>
+        </div>
+    </div>
+
+    <div class="login-layout-outer">
+        <div class="login-root">
+        <div class="login-card-shell">
+            <div class="login-grid">
+                <aside class="login-brand" aria-label="Giới thiệu bệnh viện">
+                    <div class="brand-logo">
+                        <img src="/images/LogoBV.jpg" alt="Logo bệnh viện">
+                        <div class="brand-title-container">
+                            <h1 class="brand-title">THỐNG KÊ BỆNH VIỆN</h1>
+                            <p class="brand-unit">Bệnh viện Đa khoa tỉnh Lai Châu</p>
+                        </div>
+                    </div>                    
+
+                    <div class="marquee-card">
+                        <div class="marquee-card-label">Tin &amp; giới thiệu</div>
+                        <div class="marquee-viewport">
+                            <div class="marquee-track">
+                                <div class="marquee-content">
+                                    <p><br><br/><br><br/></p>
+                                    <p>Bệnh viện Đa khoa tỉnh Lai Châu</p>
+                                    <p>Thành lập: 12/5/2004 là Bệnh viện hạng III.</p>
+                                    <ul>
+                                        <li>2013 Bệnh viện đa khoa được nâng lên là bệnh viện hạng II.</li>
+                                        <li>Quy mô giường bệnh:</li>
+                                    </ul>
+                                    <p>Ban đầu BV chỉ có 60 giường; năm 2009 là 250 giường, năm 2011 nâng quy mô lên 300 giường KH.</p>
+                                    <p>Bệnh viện Đa khoa tỉnh Lai Châu là bệnh viện hạng II, trực thuộc Sở Y tế. Bệnh viện được giao 500 giường bệnh, gồm 29 khoa, phòng bao gồm 06 phòng chức năng; 16 khoa lâm sàng; 07 khoa cận lâm sàng. Cơ sở vật chất, trang thiết bị nhân lực được đảm bảo cơ bản đáp ứng được nhu cầu khám, chữa bệnh cho nhân dân trên địa bàn tỉnh và các tỉnh lân cận. Bệnh viện đã thực hiện được 6.476 dịch vụ kỹ thuật trong đó có 5.995 dịch vụ KT đúng tuyến và 483 kỹ thuật vượt tuyến.</p>
+                                    <ul>
+                                        <li>Tổng số nhân lực hiện có 501 CBVC: Bác sỹ: 117 người (03 bác sỹ CKII; 03 Thạc sỹ; 42 bác sỹ CKI; 69 bác sỹ đa khoa và ĐH chuyên khoa). 30 Dược sỹ, 267 Điều dưỡng, KTV, NHS, 87 cán bộ khác.</li>
+                                    </ul>
+                                    <p><strong>Công tác chỉ đạo tuyến:</strong></p>
+                                    <ul>
+                                        <li>Là bệnh viện vệ tinh của các bệnh viện: Việt Đức và bệnh viện K với các chuyên ngành: Ngoại, Tim mạch, Ung bướu…</li>
+                                        <li>Tiếp tục triển khai các hoạt động chỉ đạo tuyến và luân phiên bác sỹ theo Đề án 1816 cho các Bệnh viện, Trung tâm Y tế các huyện, thành phố trong toàn tỉnh.</li>
+                                        <li>Tiếp nhận các kỹ thuật chuyển giao của bệnh viện tuyến trung ương tại bệnh viện và tập huấn lại, áp dụng có hiệu quả sau khi tiếp nhận.</li>
+                                        <li>Mở các lớp tập huấn cho tuyến dưới, cử cán bộ đi luân phiên giúp tuyến cơ sở nâng cao chất lượng khám chữa bệnh đáp ứng nhu cầu ngày càng cao của nhân dân.</li>
+                                        <li>Chuyển giao các kỹ thuật lâm sàng, cận lâm sàng theo hình thức cầm tay chỉ việc tại bệnh viện cho các cơ sở y tế trong viện.</li>
+                                        <li>Tổ chức kiểm tra, giám sát việc thực hiện chế độ luân phiên nhằm đánh giá chất lượng thực hiện công tác luân phiên.</li>
+                                    </ul>
+                                    <p><strong>Thành tựu nổi bật:</strong></p>
+                                    <ul>
+                                        <li>Năm 2014 được Sở Y tế phê duyệt đề án kiện toàn tổ chức các khoa phòng theo bệnh viện hạng II giai đoạn I.</li>
+                                        <li>Được tặng thưởng nhiều cờ thi đua, Bằng khen của Thủ tướng Chính phủ, của Bộ Y tế và của UBND tỉnh Lai Châu:
+                                            <ul>
+                                                <li>Năm 2010, 2014 được UBND tỉnh tặng danh hiệu tập thể lao động xuất sắc.</li>
+                                                <li>Năm 2014 được UBND tỉnh tặng cờ thi đua.</li>
+                                                <li>Năm 2004, 2005, 2011 được UBND tỉnh Lai Châu tặng bằng khen.</li>
+                                                <li>Năm 2009 Bộ Y tế tặng Bằng khen.</li>
+                                                <li>Năm 2014 nhận Bằng khen của Thủ tướng Chính phủ.</li>
+                                            </ul>
+                                        </li>
+                                        <li>Đội ngũ cán bộ của bệnh viện được phong tặng 01 danh hiệu Thầy thuốc Nhân dân, 01 danh hiệu thầy thuốc ưu tú.</li>
+                                    </ul>
+                                </div>
+                                <div class="marquee-content" aria-hidden="true">
+                                    <p><br><br/><br><br/></p>
+                                    <p>Bệnh viện Đa khoa tỉnh Lai Châu</p>
+                                    <p>Thành lập: 12/5/2004 là Bệnh viện hạng III.</p>
+                                    <ul>
+                                        <li>2013 Bệnh viện đa khoa được nâng lên là bệnh viện hạng II.</li>
+                                        <li>Quy mô giường bệnh:</li>
+                                    </ul>
+                                    <p>Ban đầu BV chỉ có 60 giường; năm 2009 là 250 giường, năm 2011 nâng quy mô lên 300 giường KH.</p>
+                                    <p>Bệnh viện Đa khoa tỉnh Lai Châu là bệnh viện hạng II, trực thuộc Sở Y tế. Bệnh viện được giao 500 giường bệnh, gồm 29 khoa, phòng bao gồm 06 phòng chức năng; 16 khoa lâm sàng; 07 khoa cận lâm sàng. Cơ sở vật chất, trang thiết bị nhân lực được đảm bảo cơ bản đáp ứng được nhu cầu khám, chữa bệnh cho nhân dân trên địa bàn tỉnh và các tỉnh lân cận. Bệnh viện đã thực hiện được 6.476 dịch vụ kỹ thuật trong đó có 5.995 dịch vụ KT đúng tuyến và 483 kỹ thuật vượt tuyến.</p>
+                                    <ul>
+                                        <li>Tổng số nhân lực hiện có 501 CBVC: Bác sỹ: 117 người (03 bác sỹ CKII; 03 Thạc sỹ; 42 bác sỹ CKI; 69 bác sỹ đa khoa và ĐH chuyên khoa). 30 Dược sỹ, 267 Điều dưỡng, KTV, NHS, 87 cán bộ khác.</li>
+                                    </ul>
+                                    <p><strong>Công tác chỉ đạo tuyến:</strong></p>
+                                    <ul>
+                                        <li>Là bệnh viện vệ tinh của các bệnh viện: Việt Đức và bệnh viện K với các chuyên ngành: Ngoại, Tim mạch, Ung bướu…</li>
+                                        <li>Tiếp tục triển khai các hoạt động chỉ đạo tuyến và luân phiên bác sỹ theo Đề án 1816 cho các Bệnh viện, Trung tâm Y tế các huyện, thành phố trong toàn tỉnh.</li>
+                                        <li>Tiếp nhận các kỹ thuật chuyển giao của bệnh viện tuyến trung ương tại bệnh viện và tập huấn lại, áp dụng có hiệu quả sau khi tiếp nhận.</li>
+                                        <li>Mở các lớp tập huấn cho tuyến dưới, cử cán bộ đi luân phiên giúp tuyến cơ sở nâng cao chất lượng khám chữa bệnh đáp ứng nhu cầu ngày càng cao của nhân dân.</li>
+                                        <li>Chuyển giao các kỹ thuật lâm sàng, cận lâm sàng theo hình thức cầm tay chỉ việc tại bệnh viện cho các cơ sở y tế trong viện.</li>
+                                        <li>Tổ chức kiểm tra, giám sát việc thực hiện chế độ luân phiên nhằm đánh giá chất lượng thực hiện công tác luân phiên.</li>
+                                    </ul>
+                                    <p><strong>Thành tựu nổi bật:</strong></p>
+                                    <ul>
+                                        <li>Năm 2014 được Sở Y tế phê duyệt đề án kiện toàn tổ chức các khoa phòng theo bệnh viện hạng II giai đoạn I.</li>
+                                        <li>Được tặng thưởng nhiều cờ thi đua, Bằng khen của Thủ tướng Chính phủ, của Bộ Y tế và của UBND tỉnh Lai Châu:
+                                            <ul>
+                                                <li>Năm 2010, 2014 được UBND tỉnh tặng danh hiệu tập thể lao động xuất sắc.</li>
+                                                <li>Năm 2014 được UBND tỉnh tặng cờ thi đua.</li>
+                                                <li>Năm 2004, 2005, 2011 được UBND tỉnh Lai Châu tặng bằng khen.</li>
+                                                <li>Năm 2009 Bộ Y tế tặng Bằng khen.</li>
+                                                <li>Năm 2014 nhận Bằng khen của Thủ tướng Chính phủ.</li>
+                                            </ul>
+                                        </li>
+                                        <li>Đội ngũ cán bộ của bệnh viện được phong tặng 01 danh hiệu Thầy thuốc Nhân dân, 01 danh hiệu thầy thuốc ưu tú.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="login-form-col">
+                    <div class="login-form-inner" data-qr-enabled="<%= typeof showQRLogin !== 'undefined' && showQRLogin ? 'true' : 'false' %>">
+                        <div class="login-container">
+                            <h2>Đăng nhập</h2>
+                            <p class="login-hint">Vui lòng nhập tài khoản để tiếp tục.</p>
+                            <form action="/login" method="post">
+                                <input type="text" name="username" placeholder="Tên đăng nhập hoặc Email" autocomplete="username" required>
+                                <input type="password" name="password" placeholder="Mật khẩu" autocomplete="current-password" required>
+                                <button type="submit">Đăng nhập</button>
+                                <% if (typeof error !== 'undefined' && error) { %>
+                                    <div class="error-message"><%- error %></div>
+                                <% } %>
+                            </form>
+                        </div>
+
+                        <% if (typeof showQRLogin !== 'undefined' && showQRLogin) { %>
+                        <div class="qr-container">
+                            <h3>Đăng nhập QR</h3>
+                            <div class="qr-code-wrapper" id="qrCodeWrapper">
+                                <div class="qr-loading"></div>
+                            </div>
+                            <div class="qr-status pending" id="qrStatus">Đang tạo mã QR...</div>
+                        </div>
+                        <% } %>
+                    </div>
+                </section>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        const loginFormInner = document.querySelector('.login-form-inner');
+        const showQRLogin = loginFormInner ? loginFormInner.getAttribute('data-qr-enabled') === 'true' : false;
+
+        let currentToken = null;
+        let statusPollInterval = null;
+
+        async function generateQRCode() {
+            const qrCodeWrapper = document.getElementById('qrCodeWrapper');
+            const qrStatus = document.getElementById('qrStatus');
+            if (!qrCodeWrapper || !qrStatus) return;
+
+            qrCodeWrapper.innerHTML = '<div class="qr-loading"></div>';
+            qrStatus.className = 'qr-status pending';
+            qrStatus.textContent = 'Đang tạo mã QR...';
+
+            try {
+                const response = await fetch('/api/qr/generate');
+                const data = await response.json();
+
+                if (response.ok && data.qrCode) {
+                    currentToken = data.token;
+                    qrCodeWrapper.innerHTML = '<img src="' + data.qrCode + '" alt="QR Code">';
+                    qrStatus.className = 'qr-status pending';
+                    qrStatus.textContent = 'Quét mã QR để đăng nhập';
+                    startStatusPolling();
+                } else {
+                    throw new Error(data.error || 'Không thể tạo QR code');
+                }
+            } catch (error) {
+                console.error('Lỗi tạo QR code:', error);
+                qrCodeWrapper.innerHTML = '';
+                qrStatus.className = 'qr-status expired';
+                qrStatus.textContent = 'Lỗi: ' + error.message;
+            }
+        }
+
+        function startStatusPolling() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
+
+            statusPollInterval = setInterval(async () => {
+                if (!currentToken) return;
+                try {
+                    const response = await fetch('/api/qr/status/' + currentToken);
+                    const data = await response.json();
+                    const qrStatus = document.getElementById('qrStatus');
+
+                    if (data.status === 'confirmed') {
+                        qrStatus.className = 'qr-status confirmed';
+                        qrStatus.textContent = 'Đã xác nhận! Đang đăng nhập...';
+                        clearInterval(statusPollInterval);
+                        await loginWithQR();
+                    } else if (data.status === 'rejected') {
+                        qrStatus.className = 'qr-status expired';
+                        qrStatus.textContent = 'Đã từ chối. Đang tạo mã QR mới...';
+                        clearInterval(statusPollInterval);
+                        currentToken = null;
+                        setTimeout(generateQRCode, 2000);
+                    } else if (data.status === 'expired') {
+                        qrStatus.className = 'qr-status expired';
+                        qrStatus.textContent = 'Mã QR đã hết hạn. Đang tạo mã QR mới...';
+                        clearInterval(statusPollInterval);
+                        currentToken = null;
+                        setTimeout(generateQRCode, 2000);
+                    }
+                } catch (e) {
+                    console.error('Lỗi kiểm tra trạng thái:', e);
+                }
+            }, 2000);
+        }
+
+        async function loginWithQR() {
+            if (!currentToken) return;
+            try {
+                const response = await fetch('/api/qr/login/' + currentToken, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    window.location.href = data.redirect || '/?loadHoatDongBenhVien=true';
+                } else {
+                    const qrStatus = document.getElementById('qrStatus');
+                    qrStatus.className = 'qr-status expired';
+                    qrStatus.textContent = data.error || 'Lỗi đăng nhập. Vui lòng thử lại.';
+                    currentToken = null;
+                }
+            } catch (e) {
+                console.error('Lỗi đăng nhập:', e);
+                const qrStatus = document.getElementById('qrStatus');
+                qrStatus.className = 'qr-status expired';
+                qrStatus.textContent = 'Lỗi đăng nhập. Vui lòng thử lại.';
+                currentToken = null;
+            }
+        }
+
+        if (showQRLogin) generateQRCode();
+    </script>
+</body>
+</html>

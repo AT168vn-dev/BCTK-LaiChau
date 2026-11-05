@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THỐNG KÊ TOÀN VIỆN</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .dashboard .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100px;
+        }
+
+        .text-highlight {
+            color: green;
+            font-weight: bold;
+        }
+
+        /* Định dạng chung cho phần form chọn ngày */
+        #dateRangeForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Định dạng các ô input ngày và giờ */
+        /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+        #dateRangeForm label {
+            font-weight: bold;
+            color: #333;
+            /* Màu chữ đậm, xám than */
+        }
+
+        #startDateBCToanVien,
+        #endDateBCToanVien {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #1a73e8;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startTimeBCToanVien,
+        #endTimeBCToanVien {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #d20913bd;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startDateBCToanVien:focus,
+        #startTimeBCToanVien:focus,
+        #endDateBCToanVien:focus,
+        #endTimeBCToanVien:focus {
+            border-color: #1a73e8;
+            /* Bo viền xanh dương khi chọn */
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+        }
+
+        /* Style cho các ô date theo chuẩn Google */
+        #dateRangeForm input[type="date"],
+        #dateRangeForm input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Khi input được chọn, bo viền màu xanh */
+        #dateRangeForm input[type="date"]:focus,
+        #dateRangeForm input[type="text"]:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+        }
+
+        /* Điều chỉnh chiều rộng ngắn hơn cho startTimeBCToanVien và endTimeBCToanVien */
+        #startTimeBCToanVien,
+        #endTimeBCToanVien {
+            width: 80px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #startDateBCToanVien,
+        #endDateBCToanVien {
+            width: 130px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        canvas {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        #zButtonBCToanVien {
+            font-size: 14px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #2e7d32;
+            /* Màu xanh đậm */
+            color: #e0f7fa;
+            /* Màu chữ sáng hơn */
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #zButtonBCToanVien:hover {
+            background-color: #074705;
+            /* Màu nền xanh đậm hơn khi rê chuột vào */
+            color: #e1ee2e;
+            /* Chữ màu trắng sáng khi rê chuột vào */
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>THỐNG KÊ TOÀN VIỆN</h1>
+
+    <form id="dateRangeForm">
+        <label for="startDateBCToanVien">Từ ngày: </label>
+        <input type="text" name="startDateBCToanVien" id="startDateBCToanVien" value="<%= defaultDate %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="startTimeBCToanVien" name="startTimeBCToanVien" value="00:00"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <label for="endDateBCToanVien">Đến ngày: </label>
+        <input type="text" name="endDateBCToanVien" id="endDateBCToanVien" value="<%= defaultDate %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="endTimeBCToanVien" name="endTimeBCToanVien" value="23:59"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <button type="button" id="zButtonBCToanVien">Lấy Báo Cáo</button>
+    </form>
+
+    <div>
+        <h2>BHYT</h2>
+        <canvas id="bhytChart" style="width:100%;max-width:500px"></canvas>
+    </div>
+
+    <div>
+        <h2>Dịch Vụ</h2>
+        <canvas id="dichVuChart" style="width:100%;max-width:500px"></canvas>
+    </div>
+
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>

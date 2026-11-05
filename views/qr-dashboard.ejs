@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/iconWS.png" type="image/png">
+    <title>Báo Cáo Khám Sức Khỏe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff !important;
+            /* NỀN TRẮNG */
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        /* Đảm bảo container hiển thị đầy đủ khi export PDF */
+        #pdfContent {
+            box-sizing: border-box;
+            overflow: visible;
+        }
+
+        /* Đảm bảo tất cả nội dung trong container hiển thị đầy đủ */
+        #pdfContent * {
+            box-sizing: border-box;
+        }
+
+        /* CSS chống vỡ trang cho PDF export (áp dụng cho html2canvas) */
+        table,
+        tr,
+        td,
+        th {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .header {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .table-container {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .summary-box {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .footer {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: #212529;
+            font-size: 1.1em;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 15px 0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            border-left: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
+        }
+
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .abnormal {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: bold;
+        }
+
+        .normal {
+            color: #28a745;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .footer-title {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .footer-info {
+            line-height: 1.8;
+            color: #495057;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #f39c12;
+        }
+
+        .summary-title {
+            font-size: 1.5em;
+            color: #856404;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .summary-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .summary-list li {
+            padding: 8px 0;
+            color: #856404;
+            font-size: 1.1em;
+        }
+
+        .summary-list li:before {
+            content: "⚠️ ";
+            margin-right: 8px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .pdf-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .pdf-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+        }
+
+        .pdf-button:active {
+            transform: translateY(0);
+        }
+
+        .pdf-button i {
+            margin-right: 6px;
+        }
+
+        .print-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .print-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        .print-button:active {
+            transform: translateY(0);
+        }
+
+        .print-button i {
+            margin-right: 6px;
+        }
+
+        /* ========== RESPONSIVE DESIGN CHO ĐIỆN THOẠI ========== */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 10px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+                margin-bottom: 8px;
+            }
+
+            .header p {
+                font-size: 0.95em;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .section {
+                margin-bottom: 30px;
+                padding-left: 15px;
+                border-left-width: 3px;
+            }
+
+            .section-title {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 15px;
+            }
+
+            .info-item {
+                padding: 12px;
+            }
+
+            .info-label {
+                font-size: 0.85em;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-size: 1em;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-top: 15px;
+            }
+
+            table {
+                min-width: 600px;
+                font-size: 0.9em;
+                margin: 10px 0;
+            }
+
+            th {
+                padding: 10px 8px;
+                font-size: 0.8em;
+            }
+
+            td {
+                padding: 10px 8px;
+                font-size: 0.85em;
+            }
+
+            .summary-box {
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .summary-title {
+                font-size: 1.2em;
+                margin-bottom: 12px;
+            }
+
+            .summary-list li {
+                padding: 6px 0;
+                font-size: 0.95em;
+            }
+
+            .footer {
+                padding: 20px 15px;
+            }
+
+            .footer-title {
+                font-size: 1.1em;
+                margin-bottom: 12px;
+            }
+
+            .footer-info {
+                font-size: 0.9em;
+                line-height: 1.6;
+            }
+
+            .button-group {
+                margin: 10px;
+                gap: 8px;
+            }
+
+            .back-button,
+            .pdf-button,
+            .print-button {
+                flex: 1;
+                min-width: 120px;
+                padding: 10px 15px;
+                font-size: 13px;
+                text-align: center;
+            }
+
+            .back-button i,
+            .pdf-button i,
+            .print-button i {
+                margin-right: 5px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header p {
+                font-size: 0.85em;
+            }
+
+            .content {
+                padding: 15px 10px;
+            }
+
+            .section-title {
+                font-size: 1.1em;
+            }
+
+            table {
+                min-width: 500px;
+                font-size: 0.85em;
+            }
+
+            th {
+                padding: 8px 6px;
+                font-size: 0.75em;
+            }
+
+            td {
+                padding: 8px 6px;
+                font-size: 0.8em;
+            }
+
+            .button-group {
+                flex-direction: column;
+                margin: 10px 5px;
+            }
+
+            .back-button,
+            .pdf-button,
+            .print-button {
+                width: 100%;
+                margin: 0;
+            }
+        }
+
+        /* CSS tối ưu cho Microsoft Print to PDF - Chất lượng cao nhất */
+        @media print {
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body {
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .button-group {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .content {
+                padding: 20px !important;
+            }
+
+            .section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 25px !important;
+            }
+
+            table {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border-collapse: collapse !important;
+            }
+
+            thead {
+                display: table-header-group !important;
+            }
+
+            tbody {
+                display: table-row-group !important;
+            }
+
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            th {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: white !important;
+            }
+
+            .table-container {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                overflow: visible !important;
+            }
+
+            .summary-box {
+                background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .footer {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .info-item {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .abnormal {
+                background: #fff3cd !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Ẩn tất cả overlay và modal khi in */
+            .print-overlay,
+            .print-modal,
+            div[style*="position: fixed"][style*="z-index"] {
+                display: none !important;
+            }
+
+            div[style*="rgba(0,0,0"] {
+                display: none !important;
+            }
+
+            /* Đảm bảo font và kích thước chữ rõ ràng khi in */
+            body,
+            .content,
+            table,
+            td,
+            th {
+                font-size: 11pt !important;
+            }
+
+            .section-title {
+                font-size: 16pt !important;
+            }
+
+            .header h1 {
+                font-size: 24pt !important;
+            }
+
+            /* Tối ưu cho Microsoft Edge Print to PDF */
+            @supports (-ms-ime-align: auto) {
+                * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="button-group">
+        <a href="/" class="back-button">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+        <button class="print-button" id="printBtn" onclick="printWithMicrosoftPDF()"
+            title="Sử dụng Microsoft Print to PDF để có chất lượng tốt nhất">
+            <i class="fas fa-print"></i> In PDF
+        </button>
+        <button class="pdf-button" id="exportPdfBtn" onclick="exportToPDF()"
+            title="Xuất PDF trực tiếp (chất lượng thấp hơn)">
+            <i class="fas fa-file-pdf"></i> Xuất PDF
+        </button>
+    </div>
+
+    <div class="container" id="pdfContent">
+        <div class="header">
+            <h1><i class="fas fa-file-medical"></i> Báo Cáo Khám Sức Khỏe</h1>
+            <p>Đại học Khoa học và Công nghệ Côn Sơn - Bản dịch tiếng Việt</p>
+        </div>
+
+        <div class="content">
+            <!-- Thông tin cá nhân -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-user"></i> Thông tin cá nhân</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Họ và tên</div>
+                        <div class="info-value">Nguyễn Thị Trang</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Giới tính</div>
+                        <div class="info-value">Nữ</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nhóm máu</div>
+                        <div class="info-value">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Đơn vị</div>
+                        <div class="info-value">Hệ thống ban ngày - Thạc sĩ - Điện 1 năm A</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tình trạng mẫu</div>
+                        <div class="info-value normal">Bình thường</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ngày khám</div>
+                        <div class="info-value">14/10/2025</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ngày báo cáo</div>
+                        <div class="info-value">11/11/2025</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tiền sử bệnh</div>
+                        <div class="info-value normal">Không có</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khám tổng quát -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-stethoscope"></i> Khám tổng quát</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Đầu và cổ</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tai mũi họng</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ngực</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Bụng</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Da</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Cột sống</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tay và chân</div>
+                        <div class="info-value normal">Không có bất thường rõ ràng</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đo lường cơ thể -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-ruler"></i> Đo lường cơ thể</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Chiều cao</strong></td>
+                                <td>154.6 cm</td>
+                                <td>-</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cân nặng</strong></td>
+                                <td>51.1 kg</td>
+                                <td>-</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cân nặng lý tưởng (IBW)</strong></td>
+                                <td>52.6 kg</td>
+                                <td>Chiều cao (m) x 22 kg</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Chỉ số khối cơ thể (BMI)</strong></td>
+                                <td>21.4</td>
+                                <td>18.5 ≤ BMI < 24.0</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr class="abnormal">
+                                <td><strong>Tỷ lệ mỡ cơ thể</strong></td>
+                                <td>25.5%</td>
+                                <td>18-33%</td>
+                                <td>Mỡ hơi nhiều</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Huyết áp tâm thu</strong></td>
+                                <td>102 mmHg</td>
+                                <td>90-140 mmHg</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Huyết áp tâm trương</strong></td>
+                                <td>79 mmHg</td>
+                                <td>60-90 mmHg</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Thị lực và thính giác -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-eye"></i> Thị lực và thính giác</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Trái</th>
+                                <th>Phải</th>
+                                <th>Giá trị tham chiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Thị lực không kính</strong></td>
+                                <td>0.9</td>
+                                <td>0.9</td>
+                                <td>≥ 0.9</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Thị lực có kính</strong></td>
+                                <td>1.0</td>
+                                <td>1.2</td>
+                                <td>≥ 0.9</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Phân biệt màu sắc</strong></td>
+                                <td colspan="3" class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Thính giác</strong></td>
+                                <td colspan="3" class="normal">Không có bất thường rõ ràng</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm chức năng gan -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-liver"></i> Xét nghiệm chức năng gan</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>AST (GOT)</strong></td>
+                                <td>29 U/L</td>
+                                <td>10-37 U/L</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr class="abnormal">
+                                <td><strong>ALT (GPT)</strong></td>
+                                <td>48 U/L</td>
+                                <td>10-37 U/L</td>
+                                <td>Cao</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kháng nguyên bề mặt viêm gan B (HBsAg)</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="normal">Âm tính</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kháng thể bề mặt viêm gan B (Anti-HBs)</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="normal">Âm tính</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kháng nguyên e viêm gan B (HBeAg)</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="normal">Âm tính</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kháng thể viêm gan C (Anti-HCV)</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="normal">Âm tính</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kháng thể viêm gan A IgG (Anti-HAV)</strong></td>
+                                <td>- hoặc +</td>
+                                <td>- hoặc +</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm tim mạch -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-heartbeat"></i> Xét nghiệm tim mạch</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Triglyceride (TG)</strong></td>
+                                <td>89 mg/dl</td>
+                                <td>50-150 mg/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr class="abnormal">
+                                <td><strong>Cholesterol toàn phần (Cho)</strong></td>
+                                <td>265 mg/dl</td>
+                                <td>140-230 mg/dl</td>
+                                <td>Cao</td>
+                            </tr>
+                            <tr>
+                                <td><strong>HDL-Cholesterol</strong></td>
+                                <td>60 mg/dl</td>
+                                <td>> 40 mg/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Chỉ số xơ vữa động mạch (Cho/HDL)</strong></td>
+                                <td>4.4</td>
+                                <td>
+                                    < 5.0</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>LDL-Cholesterol</strong></td>
+                                <td>-</td>
+                                <td>
+                                    < 130 mg/dl</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm chức năng thận -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-kidneys"></i> Xét nghiệm chức năng thận</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Ure máu (BUN)</strong></td>
+                                <td>13.4 mg/dl</td>
+                                <td>5-21 mg/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Creatinine (Cre.)</strong></td>
+                                <td>0.84 mg/dl</td>
+                                <td>0.6-1.4 mg/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Axit uric (UA)</strong></td>
+                                <td>6.1 mg/dl</td>
+                                <td>3.0-7.0 mg/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Độ lọc cầu thận (eGFR)</strong></td>
+                                <td>-</td>
+                                <td>≥ 100 ml/min/1.73m²</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm đường huyết -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-tint"></i> Xét nghiệm đường huyết</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Đường huyết lúc đói (Glucose AC)</strong></td>
+                                <td>85 mg/dl</td>
+                                <td>70-110 mg/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm máu tổng quát -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-vial"></i> Xét nghiệm máu tổng quát (CBC)</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Bạch cầu (WBC)</strong></td>
+                                <td>6,600 /µL</td>
+                                <td>4,000-10,000 /µL</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hồng cầu (RBC)</strong></td>
+                                <td>501 vạn/µL</td>
+                                <td>400-550 vạn/µL</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hemoglobin (Hb)</strong></td>
+                                <td>14.6 g/dl</td>
+                                <td>12-16 g/dl</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hematocrit (Ht)</strong></td>
+                                <td>45.3%</td>
+                                <td>36-48%</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Thể tích hồng cầu trung bình (MCV)</strong></td>
+                                <td>90.4 fL</td>
+                                <td>80-100 fL</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tiểu cầu (Plat)</strong></td>
+                                <td>24.4 vạn/µL</td>
+                                <td>15-45 vạn/µL</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm nước tiểu -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-flask"></i> Xét nghiệm nước tiểu</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chỉ số</th>
+                                <th>Giá trị</th>
+                                <th>Giá trị tham chiếu</th>
+                                <th>Đánh giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Đường trong nước tiểu (Sugar)</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="normal">Âm tính</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Protein trong nước tiểu</strong></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="normal">Âm tính</td>
+                            </tr>
+                            <tr class="abnormal">
+                                <td><strong>Máu ẩn trong nước tiểu (Occult Blood)</strong></td>
+                                <td>+</td>
+                                <td>-</td>
+                                <td>Dương tính</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Độ pH</strong></td>
+                                <td>6.0</td>
+                                <td>5.0-7.5</td>
+                                <td class="normal">Bình thường</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Xét nghiệm huyết thanh -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-microscope"></i> Xét nghiệm huyết thanh</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Giang mai VDRL (Định tính)</div>
+                        <div class="info-value">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Giang mai TPHA (Định lượng)</div>
+                        <div class="info-value">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khác -->
+            <div class="section">
+                <div class="section-title"><i class="fas fa-tooth"></i> Khác</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Răng miệng</div>
+                        <div class="info-value normal">Đã điều trị</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">X-quang ngực (phim nhỏ)</div>
+                        <div class="info-value normal">Không có tổn thương phổi rõ ràng</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tóm tắt bất thường -->
+            <div class="summary-box">
+                <div class="summary-title"><i class="fas fa-exclamation-triangle"></i> Tóm tắt các chỉ số bất thường
+                </div>
+                <ul class="summary-list">
+                    <li><strong>Tỷ lệ mỡ cơ thể:</strong> 25.5% - <span class="highlight">Mỡ hơi nhiều</span> (Giá trị
+                        tham chiếu: 18-33%)</li>
+                    <li><strong>ALT (GPT):</strong> 48 U/L - <span class="highlight">Cao</span> (Giá trị tham chiếu:
+                        10-37 U/L)</li>
+                    <li><strong>Cholesterol toàn phần:</strong> 265 mg/dl - <span class="highlight">Cao</span> (Giá trị
+                        tham chiếu: 140-230 mg/dl)</li>
+                    <li><strong>Máu ẩn trong nước tiểu:</strong> Dương tính (+) - <span class="highlight">Bất
+                            thường</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-title"><i class="fas fa-hospital"></i> Thông tin bệnh viện và phòng xét nghiệm</div>
+            <div class="footer-info">
+                <p><strong>Bệnh viện Vĩnh Hòa và Phòng xét nghiệm Thành Công</strong></p>
+                <p><strong>Địa chỉ:</strong> Số 191, Đường Trung Sơn, Quận Trung Tây, Thành phố Đài Nam</p>
+                <p><strong>Điện thoại:</strong> (06) 2203619</p>
+                <p><strong>Kỹ thuật viên y tế:</strong> Ngô Gia Sinh</p>
+            </div>
+            <div
+                style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <p style="color: #856404; font-weight: bold; margin-bottom: 10px;">⚠️ Lưu ý và xử lý:</p>
+                <p style="color: #856404; line-height: 1.8;">
+                    Đối với các chỉ số cao, thấp hoặc bất thường: Vui lòng tham khảo phần giải thích và khuyến nghị ở
+                    mặt sau của báo cáo.
+                    Thông tin trên chỉ mang tính chất tham khảo, vui lòng tuân theo chỉ dẫn của bác sĩ.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Hàm in với Microsoft Print to PDF - Chất lượng tốt nhất
+         */
+        function printWithMicrosoftPDF() {
+            const oldOverlays = document.querySelectorAll('.print-overlay, .print-modal');
+            oldOverlays.forEach(el => el.remove());
+
+            function removeOverlay() {
+                const overlay = document.querySelector('.print-overlay');
+                const modal = document.querySelector('.print-modal');
+                if (overlay) overlay.remove();
+                if (modal) modal.remove();
+            }
+
+            const instructions = `
+                <div class="print-modal" style="
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    max-width: 500px;
+                    text-align: left;
+                ">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">
+                        <i class="fas fa-info-circle"></i> Hướng dẫn in PDF
+                    </h3>
+                    <ol style="line-height: 2; color: #495057;">
+                        <li>Trong hộp thoại in, chọn <strong>"Microsoft Print to PDF"</strong> hoặc <strong>"Save as PDF"</strong></li>
+                        <li>Chọn <strong>"More settings"</strong> và đảm bảo:</li>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Margins: <strong>Default</strong> hoặc <strong>Minimum</strong></li>
+                            <li>Scale: <strong>100%</strong></li>
+                            <li>Background graphics: <strong>Bật</strong> (quan trọng!)</li>
+                        </ul>
+                        <li>Nhấn <strong>"Save"</strong> để lưu PDF</li>
+                    </ol>
+                    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="removeOverlay(); window.print();" 
+                                style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            Tiếp tục in
+                        </button>
+                        <button onclick="removeOverlay();" 
+                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Hủy
+                        </button>
+                    </div>
+                </div>
+                <div class="print-overlay" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 9999;
+                " onclick="removeOverlay();"></div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', instructions);
+            window.removeOverlay = removeOverlay;
+        }
+
+        /**
+         * Hàm xuất PDF trực tiếp bằng html2pdf.js
+         */
+        function exportToPDF() {
+            const element = document.getElementById("pdfContent");
+
+            const loading = document.createElement("div");
+            loading.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top:0; left:0; width:100%; height:100%;
+                    background: rgba(255,255,255,0.9);
+                    display:flex; align-items:center; justify-content:center;
+                    font-size:22px; font-weight:bold; color:#444;
+                    z-index:9999;
+                    flex-direction: column;
+                    gap: 20px;
+                ">
+                    <div>Đang tạo PDF, vui lòng chờ...</div>
+                    <div style="font-size: 14px; color: #666;">
+                        <i class="fas fa-info-circle"></i> 
+                        Để có chất lượng tốt nhất, hãy sử dụng nút "In với Microsoft Print to PDF"
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loading);
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'BaoCaoKhamSucKhoe_' + new Date().toISOString().split('T')[0] + '.pdf',
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 4,
+                    useCORS: true,
+                    logging: false,
+                    dpi: 300,
+                    letterRendering: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: element.scrollWidth,
+                    windowHeight: element.scrollHeight,
+                    allowTaint: false,
+                    foreignObjectRendering: true
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait',
+                    compress: false
+                },
+                pagebreak: {
+                    mode: ['avoid-all', 'css', 'legacy'],
+                    before: '.section',
+                    after: '.footer',
+                    avoid: ['table', 'tr', '.summary-box']
+                }
+            };
+
+            html2pdf().set(opt).from(element)
+                .save()
+                .then(() => {
+                    loading.remove();
+                })
+                .catch((error) => {
+                    console.error('Lỗi khi xuất PDF:', error);
+                    alert('Có lỗi xảy ra khi xuất PDF. Vui lòng thử lại hoặc sử dụng nút "In với Microsoft Print to PDF" để có chất lượng tốt hơn.');
+                    loading.remove();
+                });
+        }
+
+        // Phím tắt Ctrl+P
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                printWithMicrosoftPDF();
+            }
+        });
+    </script>
+</body>
+
+</html>
+

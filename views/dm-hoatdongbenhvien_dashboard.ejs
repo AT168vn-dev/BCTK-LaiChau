@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>THỐNG KÊ BỆNH VIỆN</title>
+
+  <!-- jQuery và jQuery UI CSS -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <!-- Thư viện jQuery và jQuery UI -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    /* Dashboard layout */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 15px;
+      padding: 10px;
+    }
+
+    /* KPI Cards Section */
+    .kpi-section {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .kpi-card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .kpi-card h3 {
+      font-size: 13px;
+      margin: 0 0 8px 0;
+      font-weight: bold;
+      color: #2e66e9;
+      text-transform: uppercase;
+    }
+
+    .kpi-separator {
+      width: 100%;
+      height: 2px;
+      background-color: #2e66e9;
+      margin: 8px 0;
+    }
+
+    .kpi-value {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    /* Màu sắc cho từng KPI card */
+    .kpi-card:nth-child(1) .kpi-value {
+      color: rgb(46, 16, 218);
+    }
+
+    .kpi-card:nth-child(2) .kpi-value {
+      color: rgb(211, 39, 223);
+    }
+
+    .kpi-card:nth-child(3) .kpi-value {
+      color: rgb(211, 39, 3);
+    }
+
+    .kpi-card:nth-child(4) .kpi-value {
+      color: red;
+    }
+
+    .kpi-card:nth-child(5) .kpi-value {
+      color: rgb(26, 215, 136);
+    }
+
+    .kpi-card:nth-child(6) .kpi-value {
+      color: darkorange;
+    }
+
+    .kpi-card:nth-child(7) .kpi-value {
+      color: #2e66e9;
+    }
+
+    .kpi-breakdown {
+      font-size: 12px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .kpi-breakdown span {
+      display: inline-block;
+      margin: 0;
+    }
+
+    .kpi-breakdown .bhyt {
+      color: #2e7d32;
+    }
+
+    .kpi-breakdown .khong-bhyt {
+      color: #d32f2f;
+    }
+
+    /* Left Section */
+    .left-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Right Section */
+    .right-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Card styling */
+    .card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h3 {
+      font-size: 14px;
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* Service Chart Container */
+    .service-chart-container {
+      height: 400px;
+      position: relative;
+    }
+
+    /* Table styling */
+    .table-panel {
+      width: 100%;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      max-height: 400px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border: 1px solid #D3D3D3;
+      font-size: 12px;
+    }
+
+    table thead th {
+      background-color: #2e66e9;
+      color: white;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 11px;
+      white-space: nowrap;
+      border: 1px solid #D3D3D3;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    table tbody td {
+      padding: 4px 4px;
+      font-size: 11px;
+      text-align: center;
+      border: 1px solid #D3D3D3;
+      white-space: nowrap;
+    }
+
+    table tbody tr {
+      height: 24px;
+    }
+
+    table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    table tbody tr:hover {
+      background-color: #e6f7ff;
+    }
+
+    .total-row td {
+      font-weight: bold !important;
+      background-color: #e3f2fd !important;
+    }
+
+    .hrl_name {
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Chart containers */
+    .chart-wrapper {
+      height: 250px;
+      position: relative;
+    }
+
+    .donut-chart-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .donut-chart-container {
+      height: 300px;
+      position: relative;
+    }
+
+    /* Date form styling */
+    #dateRangeForm {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+    }
+
+    #dateRangeForm label {
+      font-weight: bold;
+      color: #333;
+    }
+
+    #startDate,
+    #endDate {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      width: 130px;
+      text-align: center;
+      font-weight: bold;
+      color: #1a73e8;
+      background-color: #ffffff;
+    }
+
+    #startTime,
+    #endTime {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      width: 80px;
+      text-align: center;
+      font-weight: bold;
+      color: #d20913bd;
+      background-color: #ffffff;
+    }
+
+    #startDate:focus,
+    #startTime:focus,
+    #endDate:focus,
+    #endTime:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h1>HOẠT ĐỘNG BỆNH VIỆN</h1>
+    
+    <!-- Date and Time Range Form -->
+    <form id="dateRangeForm">
+      <label for="startDate">Từ ngày: </label>
+      <input type="text" name="startDate" id="startDate" value="<%= defaultDate %>" placeholder="dd/MM/yyyy" />
+      <input type="text" id="startTime" name="startTime" value="00:00:01" pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+        title="Nhập thời gian theo định dạng HH:MM">
+
+      <label for="endDate">Đến ngày: </label>
+      <input type="text" name="endDate" id="endDate" value="<%= defaultDate %>" placeholder="dd/MM/yyyy" />
+      <input type="text" id="endTime" name="endTime" value="23:59:59" readonly pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+        title="Nhập thời gian theo định dạng HH:MM">
+    </form>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+      
+      <!-- KPI Cards Section -->
+      <div class="kpi-section">
+        <div class="kpi-card">
+          <h3>TỔNG SỐ NGƯỜI BỆNH</h3>
+          <div class="kpi-separator"></div>
+          <div class="kpi-value" id="tong_so_nguoi_benh">0</div>
+          <div class="kpi-breakdown">
+            <span class="bhyt">BHYT: <span id="tong_so_nguoi_benh_bhyt">0</span></span>
+            <span class="khong-bhyt">Dịch Vụ: <span id="tong_so_nguoi_benh_dv">0</span></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>TỔNG SỐ LƯỢT KHÁM</h3>
+          <div class="kpi-separator"></div>
+          <div class="kpi-value" id="tong_so_luot_kham">0</div>
+          <div class="kpi-breakdown">
+            <span class="bhyt">BHYT: <span id="tong_so_luot_kham_bhyt">0</span></span>
+            <span class="khong-bhyt">Dịch Vụ: <span id="tong_so_luot_kham_dv">0</span></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>BẢO HIỂM Y TẾ</h3>
+          <div class="kpi-separator"></div>
+          <div class="kpi-value" id="so_luong_bao_hiem">0</div>
+          <div class="kpi-breakdown">
+            <span class="bhyt">BHYT: <span id="so_luong_bao_hiem_bhyt">0</span></span>
+            <span class="khong-bhyt">Dịch Vụ: <span id="so_luong_bao_hiem_dv">0</span></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>TỔNG SỐ NHẬP VIỆN</h3>
+          <div class="kpi-separator"></div>
+          <div class="kpi-value" id="so_luong_nhap_vien">0</div>
+          <div class="kpi-breakdown">
+            <span class="bhyt">BHYT: <span id="so_luong_nhap_vien_bhyt">0</span></span>
+            <span class="khong-bhyt">Dịch Vụ: <span id="so_luong_nhap_vien_dv">0</span></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>TỔNG SỐ CHUYỂN VIỆN</h3>
+          <div class="kpi-separator"></div>
+          <div class="kpi-value" id="so_luong_chuyen_vien">0</div>
+          <div class="kpi-breakdown">
+            <span class="bhyt">BHYT: <span id="so_luong_chuyen_vien_bhyt">0</span></span>
+            <span class="khong-bhyt">Dịch Vụ: <span id="so_luong_chuyen_vien_dv">0</span></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>DỊCH VỤ</h3>
+          <div class="kpi-separator"></div>
+          <div class="kpi-value" id="so_luong_dich_vu">0</div>
+          <div class="kpi-breakdown">
+            <span class="bhyt">BHYT: <span id="so_luong_dich_vu_bhyt">0</span></span>
+            <span class="khong-bhyt">Dịch Vụ: <span id="so_luong_dich_vu_dv">0</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Section -->
+      <div class="left-section">
+        <!-- Dịch vụ khám chữa bệnh -->
+        <div class="card">
+          <h3>DỊCH VỤ KHÁM CHỮA BỆNH</h3>
+          <div class="service-chart-container">
+            <canvas id="serviceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Người bệnh nội trú -->
+        <div class="card">
+          <h3>NGƯỜI BỆNH NỘI TRÚ</h3>
+          <div class="table-panel">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width: 5%;">STT</th>
+                  <th rowspan="2" style="width: 25%;">Khoa</th>
+                  <th rowspan="2" style="width: 10%;">Hiện có</th>
+                  <th rowspan="2" style="width: 10%;">Vào khoa</th>
+                  <th rowspan="2" style="width: 10%;">Ra khoa</th>
+                  <th rowspan="2" style="width: 10%;">Ra viện</th>
+                  <th rowspan="2" style="width: 15%;">Giường kế hoạch</th>
+                  <th rowspan="2" style="width: 15%;">Công suất</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-noitru">
+                <!-- Nội dung bảng sẽ được chèn vào đây -->
+              </tbody>
+              <tbody id="table-body2-noitru" class="total-row">
+                <!-- Nội dung tổng cộng sẽ được chèn vào đây -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section -->
+      <div class="right-section">
+        <!-- Thống kê lượt tiếp đón -->
+        <div class="card">
+          <h3>THỐNG KÊ LƯỢT TIẾP ĐÓN</h3>
+          <div class="chart-wrapper">
+            <canvas id="receptionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Doanh thu ngày -->
+        <div class="card">
+          <h3>DOANH THU NGÀY</h3>
+          <div class="chart-wrapper">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut Charts -->
+        <div class="donut-chart-wrapper">
+          <div class="card">
+            <h3>CƠ CẤU DOANH THU</h3>
+            <div class="donut-chart-container">
+              <canvas id="revenueStructureChart"></canvas>
+            </div>
+            <div style="text-align: center; font-weight: bold; margin-top: 5px;">
+              Tổng doanh thu: <span id="total-revenue-structure">0</span> ₫
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>DOANH THU THEO ĐỐI TƯỢNG</h3>
+            <div class="donut-chart-container">
+              <canvas id="revenueBySubjectChart"></canvas>
+            </div>
+            <div style="text-align: center; font-weight: bold; margin-top: 5px;">
+              Tổng doanh thu: <span id="total-revenue-subject">0</span> ₫
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/scripts.js"></script>
+  
+  <script>
+    // Initialize datepicker when page loads
+    $(document).ready(function() {
+      // Initialize datepicker for start date
+      $("#startDate").datepicker({
+        dateFormat: 'dd/mm/yy',
+        onSelect: function(selectedDate) {
+          // Update end date to be at least start date
+          $("#endDate").datepicker("option", "minDate", selectedDate);
+        }
+      });
+
+      // Initialize datepicker for end date
+      $("#endDate").datepicker({
+        dateFormat: 'dd/mm/yy',
+        onSelect: function(selectedDate) {
+          // Update start date to be at most end date
+          $("#startDate").datepicker("option", "maxDate", selectedDate);
+        }
+      });
+
+      // Handle form change to reload data
+      $("#dateRangeForm").on("change", "#startDate, #endDate, #startTime", function() {
+        const startDate = $("#startDate").val();
+        const startTime = $("#startTime").val();
+        const endDate = $("#endDate").val();
+        const endTime = $("#endTime").val();
+
+        if (startDate && endDate) {
+          // Convert date format from dd/mm/yyyy to yyyy-mm-dd
+          const convertDateFormat = (dateStr) => {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+              return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return dateStr;
+          };
+
+          const startTimestamp = `${convertDateFormat(startDate)} ${startTime || '00:00:01'}`;
+          const endTimestamp = `${convertDateFormat(endDate)} ${endTime || '23:59:59'}`;
+
+          // Reload all dashboard data
+          fetchHoatDongBenhVien(startTimestamp, endTimestamp);
+          fetchKPIDashboardData(startTimestamp, endTimestamp);
+          fetchServiceChartData(startTimestamp, endTimestamp);
+          fetchNoiTruTableData(startTimestamp, endTimestamp);
+          fetchRevenueStructureData(startTimestamp, endTimestamp);
+        }
+      });
+
+      // Set default end date time to current date and 23:59:59
+      const now = new Date();
+      const today = ("0" + now.getDate()).slice(-2) + "/" + 
+                    ("0" + (now.getMonth() + 1)).slice(-2) + "/" + 
+                    now.getFullYear();
+      
+      if (!$("#endDate").val()) {
+        $("#endDate").val(today);
+      }
+      if (!$("#endTime").val()) {
+        $("#endTime").val("23:59:59");
+      }
+    });
+  </script>
+</body>
+
+</html>

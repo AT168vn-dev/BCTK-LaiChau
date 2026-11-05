@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>THỐNG KÊ HOẠT ĐỘNG PHẪU THUẬT THỦ THUẬT</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Định dạng chung cho phần form chọn ngày */
+        #dateRangeForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Định dạng các ô input ngày và giờ */
+        /* Định dạng các trường ngày giờ với màu và độ đậm hơn */
+        #dateRangeForm label {
+            font-weight: bold;
+            color: #333;
+            /* Màu chữ đậm, xám than */
+        }
+
+        #startDateBCPTTT,
+        #endDateBCPTTT {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #1a73e8;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startTimeBCPTTT,
+        #endTimeBCPTTT {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-weight: bold;
+            /* Đậm chữ */
+            color: #d20913bd;
+            /* Màu xanh dương nhạt */
+            background-color: #ffffff;
+            /* Nền trắng */
+        }
+
+        #startDateBCPTTT:focus,
+        #startTimeBCPTTT:focus,
+        #endDateBCPTTT:focus,
+        #endTimeBCPTTT:focus {
+            border-color: #1a73e8;
+            /* Bo viền xanh dương khi chọn */
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+        }
+
+        /* Style cho các ô date theo chuẩn Google */
+        #dateRangeForm input[type="date"],
+        #dateRangeForm input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 18px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Khi input được chọn, bo viền màu xanh */
+        #dateRangeForm input[type="date"]:focus,
+        #dateRangeForm input[type="text"]:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5);
+        }
+
+        /* Điều chỉnh chiều rộng ngắn hơn cho startTimeBCPTTT và endTimeBCPTTT */
+        #startTimeBCPTTT,
+        #endTimeBCPTTT {
+            width: 80px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        #startDateBCPTTT,
+        #endDateBCPTTT {
+            width: 130px;
+            /* Chiều rộng nhỏ hơn */
+            text-align: center;
+            /* Căn giữa văn bản bên trong */
+        }
+
+        canvas {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        #zButtonBCPTTT {
+            font-size: 14px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #2e7d32;
+            /* Màu xanh đậm */
+            color: #e0f7fa;
+            /* Màu chữ sáng hơn */
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #zButtonBCPTTT:hover {
+            background-color: #074705;
+            /* Màu nền xanh đậm hơn khi rê chuột vào */
+            color: #e1ee2e;
+            /* Chữ màu trắng sáng khi rê chuột vào */
+        }
+
+        /* Style for the entire table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Header styling - keeping it as original */
+        table thead th {
+            background-color: #2e66e9;
+            color: white;
+            padding: 12px;
+            /* Original padding for headers */
+            text-align: center;
+            font-size: 12px;
+            /* Original font size for headers */
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            border: 1px solid #D3D3D3;
+        }
+
+        /* Compact styling for table body cells */
+        table tbody td {
+            padding: 4px 6px;
+            /* Điều chỉnh giá trị này để tăng chiều cao */
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid #D3D3D3;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        /* Nếu muốn tăng độ cao cụ thể mà không phụ thuộc vào padding */
+        table tbody tr {
+            height: 26px;
+            /* Tăng chiều cao của mỗi hàng, điều chỉnh giá trị theo ý muốn */
+        }
+
+        table tbody tr:hover {
+            background-color: #e6f7ff;
+        }
+
+        /* Định dạng các hàng để chia đều */
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .table-panel {
+            display: flex;
+            max-width: 100%;
+            max-height: 800px;
+            /* Chiều rộng tối đa là 45% */
+            min-width: 25%;
+            /* Chiều rộng tối thiểu là 30% */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 0;
+        }
+
+        /* Đặt bố cục Flexbox để 2 bảng nằm ngang */
+        .flex-container {
+            display: flex;
+            /* Sử dụng Flexbox */
+            justify-content: space-between;
+            /* Khoảng cách đều giữa các bảng */
+            gap: 1px;
+            /* Khoảng cách giữa các bảng */
+            padding: 11px;
+        }
+
+        /* Định dạng từng bảng */
+        .flex-item {
+            flex: 1;
+            /* Tỷ lệ mặc định là 1 phần */
+            max-width: 50%;
+            /* Chiều rộng tối đa là 45% */
+            min-width: 20%;
+            /* Chiều rộng tối thiểu là 30% */
+            background-color: #fff;
+            padding: 1px;
+            border-radius: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            /* Cuộn ngang nếu nội dung lớn hơn bảng */
+        }
+
+        .flex-item2 {
+            flex: 2;
+            /* Tỷ lệ là 2 phần (gấp đôi flex-item) */
+            max-width: 50%;
+            /* Chiều rộng tối đa là 55% */
+            min-width: 20%;
+            /* Chiều rộng tối thiểu là 40% */
+            background-color: #fff;
+            padding: 1px;
+            border-radius: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            /* Cuộn ngang nếu nội dung lớn hơn bảng */
+        }
+
+        /* Tiêu đề của mỗi bảng */
+        .flex-item h2,
+        .flex-item2 h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .total-row td {
+            font-weight: bold !important;
+        }
+        
+        /* Bố cục bảng */
+        .table-wrapper {
+            width: 100%;
+            overflow: auto;
+            /* Cuộn ngang nếu cần */
+        }
+
+        .hrl_name {
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>THỐNG KÊ HOẠT ĐỘNG PHẪU THUẬT THỦ THUẬT</h1>
+
+    <form id="dateRangeForm">
+        <label for="startDateBCPTTT">Từ ngày: </label>
+        <input type="text" name="startDateBCPTTT" id="startDateBCPTTT" value="<%= startDateBCPTTT %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="startTimeBCPTTT" name="startTimeBCPTTT" value="07:30"
+            pattern="^([01]\d|2[0-3]):([0-5]\d)$" title="Nhập thời gian theo định dạng HH:MM">
+
+        <label for="endDateBCPTTT">Đến ngày: </label>
+        <input type="text" name="endDateBCPTTT" id="endDateBCPTTT" value="<%= endDateBCPTTT %>"
+            placeholder="dd/MM/yyyy" />
+        <input type="text" id="endTimeBCPTTT" name="endTimeBCPTTT" value="07:29" pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+            title="Nhập thời gian theo định dạng HH:MM">
+
+        <button type="button" id="zButtonBCPTTT">Lấy Báo Cáo</button>
+    </form>    
+
+    <h2>THỐNG KÊ PHẪU THUẬT - THỦ THUẬT</h2>
+
+    <div class="table-panel">
+        <div class="flex-item">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 5%;">STT</th>
+                            <th rowspan="2" style="width: 30%;">Phân Loại</th>
+                            <th rowspan="2" style="width: 15%;">Tổng Số</th>
+                            <th colspan="2" style="width: 25%;">Ngoại Trú</th>
+                            <th colspan="2" style="width: 25%;">Nội trú</th>
+        
+                        </tr>
+                        <tr>
+                            <th>BHYT</th>
+                            <th>Dịch vụ</th>
+        
+                            <th>BHYT</th>
+                            <th>Dịch vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-pttt">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                    <tbody id="table-body2-pttt" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                </table>              
+            </div>
+        </div>
+       
+        <div class="flex-item2">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 5%;">STT</th>
+                            <th rowspan="2" style="width: 30%;">Người Thực Hiện</th>
+                            <th rowspan="2" style="width: 15%;">Tổng Số</th>
+                            <th colspan="4" style="width: 50%;">Phẫu Thuật</th>
+                        </tr>
+                        <tr>
+                            <th>Loại ĐB</th>
+                            <th>Loại 1</th>
+                            <th>Loại 2</th>
+                            <th>Loại 3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-theobacsi">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                    <tbody id="table-body2-theobacsi" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <h2>THỐNG KÊ THEO KHOA</h2>
+
+    <div class="table-panel">
+        <div class="flex-item">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 5%;">STT</th>
+                            <th rowspan="2" style="width: 30%;">Khoa Phòng</th>
+                            <th rowspan="2" style="width: 15%;">Tổng Số</th>
+                            <th colspan="4" style="width: 50%;">Phẫu Thuật</th>
+                        </tr>
+                        <tr>
+                            <th>Loại ĐB</th>
+                            <th>Loại 1</th>
+                            <th>Loại 2</th>
+                            <th>Loại 3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-pttt-khoaphong">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                    <tbody id="table-body2-pttt-khoaphong" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 5%;">STT</th>
+                            <th rowspan="2" style="width: 30%;">Khoa Phòng</th>
+                            <th rowspan="2" style="width: 15%;">Tổng Số</th>
+                            <th colspan="4" style="width: 50%;">Thủ Thuật</th>
+                        </tr>
+                        <tr>
+                            <th>Loại ĐB</th>
+                            <th>Loại 1</th>
+                            <th>Loại 2</th>
+                            <th>Loại 3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-thuthuat-khoaphong">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                    <tbody id="table-body2-thuthuat-khoaphong" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>
+                </table>               
+            </div>
+        </div>
+       
+        <div class="flex-item2">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 5%;">STT</th>
+                            <th rowspan="2" style="width: 10%;">Số HS</th>
+                            <th rowspan="2" style="width: 30%;">Họ Tên Người Bệnh</th>
+                            <th rowspan="2" style="width: 10%;">Mã Khoa</th>
+                            <th colspan="4" style="width: 50%;">Phẫu Thuật</th>
+                        </tr>
+                        <tr>
+                            <th>Loại ĐB</th>
+                            <th>Loại 1</th>
+                            <th>Loại 2</th>
+                            <th>Loại 3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-pttt-benhnhan">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>  
+                    <tbody id="table-body2-pttt-benhnhan" class="total-row">
+                        <!-- Nội dung bảng sẽ được chèn vào đây -->
+                    </tbody>                     
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>
